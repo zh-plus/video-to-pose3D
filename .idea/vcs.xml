@@ -2,7 +2,5 @@
 <project version="4">
   <component name="VcsDirectoryMappings">
     <mapping directory="$PROJECT_DIR$" vcs="Git" />
-    <mapping directory="$PROJECT_DIR$/joints_detectors/hrnet/flownet2" vcs="Git" />
-    <mapping directory="$PROJECT_DIR$/pose_trackers/lighttrack" vcs="Git" />
   </component>
 </project>
