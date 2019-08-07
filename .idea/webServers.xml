@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="WebServers">
+    <option name="servers">
+      <webServer id="804776c7-c26a-4863-8bd3-c2d2c8b5a389" name="TencentServer" url="http://10.66.235.221">
+        <fileTransfer host="10.66.235.221" port="22" rootFolder="/home/vision/disk/zhenghao/videopose" accessType="SFTP">
+          <advancedOptions>
+            <advancedOptions dataProtectionLevel="Private" passiveMode="true" shareSSLContext="true" />
+          </advancedOptions>
+          <option name="port" value="22" />
+        </fileTransfer>
+      </webServer>
+    </option>
+  </component>
+</project>
