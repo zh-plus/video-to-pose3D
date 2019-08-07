@@ -6,6 +6,7 @@ import cv2
 import ntpath
 import torch.utils.data
 import shutil
+import numpy as np
 
 main_path = os.path.dirname(os.path.realpath(__file__))
 sys.path.append(main_path)

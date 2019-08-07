@@ -5,20 +5,16 @@
 # LICENSE file in the root directory of this source tree.
 #
 
-#  matplotlib.use('Agg')
-
 import time
 
 import cv2
 import matplotlib.pyplot as plt
 import numpy as np
-
 from matplotlib.animation import FuncAnimation, writers
 from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
+from mpl_toolkits.mplot3d import Axes3D
 from tqdm import tqdm
 
-
-# record time
 from common.utils import read_video
 
 
@@ -272,6 +268,9 @@ def render_animation_my(keypoints, poses, skeleton, fps, bitrate, azim, output, 
     ax_in.get_yaxis().set_visible(False)
     ax_in.set_axis_off()
     ax_in.set_title('Input')
+
+    # prevent wired error
+    axes_3d = Axes3D(fig)
 
     ax_3d = []
     lines_3d = []
