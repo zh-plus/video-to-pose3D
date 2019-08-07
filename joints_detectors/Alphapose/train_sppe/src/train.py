@@ -3,18 +3,18 @@
 # Written by Jiefeng Li (jeff.lee.sjtu@gmail.com)
 # -----------------------------------------------------
 
+import os
+
 import torch
 import torch.utils.data
-from utils.dataset import coco
-from opt import opt
-from tqdm import tqdm
 from models.FastPose import createModel
+from tensorboardX import SummaryWriter
+from tqdm import tqdm
+from utils.dataset import coco
 from utils.eval import DataLogger, accuracy
 from utils.img import flip_v, shuffleLR_v
-from evaluation import prediction
 
-from tensorboardX import SummaryWriter
-import os
+from opt import opt
 
 
 def train(train_loader, m, criterion, optimizer, writer):
@@ -108,7 +108,6 @@ def valid(val_loader, m, criterion, optimizer, writer):
 
 
 def main():
-
     # Model Initialize
     m = createModel().cuda()
     if opt.loadModel:

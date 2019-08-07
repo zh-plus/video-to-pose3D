@@ -3,14 +3,12 @@
 # Written by Jiefeng Li (jeff.lee.sjtu@gmail.com)
 # -----------------------------------------------------
 
-import numpy as np
-import torch
-import scipy.misc
-from torchsample.transforms import SpecialCrop, Pad
-import torch.nn.functional as F
 import cv2
-from opt import opt
-
+import numpy as np
+import scipy.misc
+import torch
+import torch.nn.functional as F
+from torchsample.transforms import SpecialCrop, Pad
 
 RED = (0, 0, 255)
 GREEN = (0, 255, 0)
@@ -191,12 +189,12 @@ def shuffleLR(x, dataset):
             tmp = x[:, dim1].clone()
             x[:, dim1] = x[:, dim0].clone()
             x[:, dim0] = tmp.clone()
-            #x[:, dim0], x[:, dim1] = deepcopy((x[:, dim1], x[:, dim0]))
+            # x[:, dim0], x[:, dim1] = deepcopy((x[:, dim1], x[:, dim0]))
         else:
             tmp = x[dim1].clone()
             x[dim1] = x[dim0].clone()
             x[dim0] = tmp.clone()
-            #x[dim0], x[dim1] = deepcopy((x[dim1], x[dim0]))
+            # x[dim0], x[dim1] = deepcopy((x[dim1], x[dim0]))
     return x
 
 
@@ -254,8 +252,8 @@ def vis_frame(frame, im_res, format='coco'):
             part_line[n] = (cor_x, cor_y)
             cv2.circle(img, (cor_x, cor_y), 4, p_color[n], -1)
             # Now create a mask of logo and create its inverse mask also
-            #transparency = max(0, min(1, kp_scores[n]))
-            #img = cv2.addWeighted(bg, transparency, img, 1, 0)
+            # transparency = max(0, min(1, kp_scores[n]))
+            # img = cv2.addWeighted(bg, transparency, img, 1, 0)
         # Draw limbs
         for i, (start_p, end_p) in enumerate(l_pair):
             if start_p in part_line and end_p in part_line:
@@ -263,7 +261,7 @@ def vis_frame(frame, im_res, format='coco'):
                 end_xy = part_line[end_p]
                 cv2.line(img, start_xy, end_xy,
                          line_color[i], (0.5 * (kp_scores[start_p] + kp_scores[end_p])) + 1)
-                #transparency = max(
+                # transparency = max(
                 #    0, min(1, (kp_scores[start_p] + kp_scores[end_p])))
-                #img = cv2.addWeighted(bg, transparency, img, 1, 0)
+                # img = cv2.addWeighted(bg, transparency, img, 1, 0)
     return img

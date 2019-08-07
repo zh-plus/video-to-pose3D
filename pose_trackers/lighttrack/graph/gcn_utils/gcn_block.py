@@ -12,8 +12,8 @@
 import torch
 import torch.nn as nn
 
-class ConvTemporalGraphical(nn.Module):
 
+class ConvTemporalGraphical(nn.Module):
     r"""The basic module for applying a graph convolution.
 
     Args:
@@ -69,7 +69,7 @@ class ConvTemporalGraphical(nn.Module):
         x = self.conv(x)  # Conv2D
 
         n, kc, t, v = x.size()
-        x = x.view(n, self.kernel_size, kc//self.kernel_size, t, v)
+        x = x.view(n, self.kernel_size, kc // self.kernel_size, t, v)
         x = torch.einsum('nkctv,kvw->nctw', (x, A))
 
         return x.contiguous(), A

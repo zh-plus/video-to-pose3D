@@ -1,5 +1,6 @@
-from utils_json import read_json_from_file, write_json_to_file
 from utils_io_folder import get_immediate_childfile_paths
+from utils_json import read_json_from_file, write_json_to_file
+
 
 def merge_posetrack_jsons():
     posetrack_annotation_folder = "../data/Data_2017/posetrack_data/annotations/train"
@@ -19,7 +20,7 @@ def merge_json(gt_json_paths, save_json_path):
     for gt_json_path in gt_json_paths:
         python_data = read_json_from_file(gt_json_path)
         python_data_merged["annolist"].extend(python_data["annolist"])
-    write_json_to_file(python_data_merged, save_json_path, flag_verbose = False)
+    write_json_to_file(python_data_merged, save_json_path, flag_verbose=False)
 
 
 if __name__ == "__main__":

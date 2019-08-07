@@ -7,6 +7,7 @@
 '''
 from utils_json import python_to_json, write_json_to_file
 
+
 class StandardData():
     def __init__(self):
         self.python_data = {"version": "1.0"}
@@ -32,6 +33,7 @@ class StandardImageInfo():
     """
     The image information class in SVAI data standard
     """
+
     def __init__(self):
         self.image_info = {}
 
@@ -50,6 +52,7 @@ class StandardCandidate():
     The candidate class in SVAI data standard
     We can add a candidate to an existing python data easily
     """
+
     def __init__(self):
         self.candidate = {}
 

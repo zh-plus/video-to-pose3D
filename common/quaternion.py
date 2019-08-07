@@ -7,6 +7,7 @@
 
 import torch
 
+
 def qrot(q, v):
     """
     Rotate vector(s) v about the rotation described by 四元数quaternion(s) q.
@@ -19,8 +20,8 @@ def qrot(q, v):
     assert q.shape[:-1] == v.shape[:-1]
 
     qvec = q[..., 1:]
-    uv = torch.cross(qvec, v, dim=len(q.shape)-1)
-    uuv = torch.cross(qvec, uv, dim=len(q.shape)-1)
+    uv = torch.cross(qvec, v, dim=len(q.shape) - 1)
+    uuv = torch.cross(qvec, uv, dim=len(q.shape) - 1)
     return (v + 2 * (q[..., :1] * uv + uuv))
 
 
@@ -32,4 +33,4 @@ def qinverse(q, inplace=False):
     else:
         w = q[..., :1]
         xyz = q[..., 1:]
-        return torch.cat((w, -xyz), dim=len(q.shape)-1)
+        return torch.cat((w, -xyz), dim=len(q.shape) - 1)

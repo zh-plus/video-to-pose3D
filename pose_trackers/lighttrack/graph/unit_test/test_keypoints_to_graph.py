@@ -5,10 +5,13 @@
 
     Unit test for data preparation
 '''
-import sys, os
+import os
+import sys
+
 sys.path.append(os.path.abspath("../utils/"))
 from keypoints_to_graph import *
 import pickle
+
 
 def test_load_data_for_gcn_train():
     dataset_str = "posetrack_18"
@@ -42,6 +45,7 @@ def test_load_data_for_gcn_val():
     with open('./posetrack_val_data.pickle', 'rb') as handle:
         restore = pickle.load(handle)
     print(restore == graph_pair_list_all)
+
 
 if __name__ == "__main__":
     test_load_data_for_gcn_train()

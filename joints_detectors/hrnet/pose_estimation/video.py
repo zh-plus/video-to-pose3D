@@ -6,10 +6,8 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-import sys
 import time
 
-import cv2
 import torch
 from scipy.signal import savgol_filter
 from tqdm import tqdm
@@ -19,10 +17,9 @@ from lib.config import update_config
 from lib.core.inference import get_final_preds
 from lib.detector.yolo.human_detector import load_model as yolo_model
 from lib.detector.yolo.human_detector import main as yolo_det
-from lib.utils.transforms import *
 from lib.models.pose_hrnet import get_pose_net as get_hr_pose_net
 from lib.models.pose_resnet import get_pose_net as get_res_pose_net
-
+from lib.utils.transforms import *
 from pose_estimation.utilitys import preprocess
 
 # path1 = os.path.split(os.path.realpath(__file__))[0]

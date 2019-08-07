@@ -69,5 +69,3 @@ def accuracy(output, target, hm_type='gaussian', thr=0.5):
     if cnt != 0:
         acc[0] = avg_acc
     return acc, avg_acc, cnt, pred
-
-

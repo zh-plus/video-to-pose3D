@@ -12,7 +12,6 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from torch.autograd import Variable
 
 from gcn_utils.gcn_block import ConvTemporalGraphical
 from gcn_utils.graph import Graph
@@ -78,12 +77,10 @@ class Model(nn.Module):
         # fcn for prediction
         self.fcn = nn.Conv2d(64, num_class, kernel_size=1)
 
-
     def forward(self, input_1, input_2):  # siamese network needs two times of forwards
         feature_1 = self.extract_feature(input_1)
         feature_2 = self.extract_feature(input_2)
         return feature_1, feature_2
-
 
     def extract_feature(self, x):
 
@@ -108,7 +105,7 @@ class Model(nn.Module):
         x = self.fcn(x)
         feature = x.view(x.size(0), -1)
 
-        #print("feature size: {}".format(feature.size()))
+        # print("feature size: {}".format(feature.size()))
         return feature
 
 
@@ -140,7 +137,7 @@ class st_gcn(nn.Module):
     def __init__(self,
                  in_channels,
                  out_channels,
-                 kernel_size, # (temporal_kernel_size, spatial_kernel_size)
+                 kernel_size,  # (temporal_kernel_size, spatial_kernel_size)
                  stride=1,
                  dropout=0,
                  residual=True):

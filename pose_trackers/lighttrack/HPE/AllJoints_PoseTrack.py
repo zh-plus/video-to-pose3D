@@ -6,18 +6,17 @@
     E-mail: guanghan.ning@jd.com
 '''
 import os
-import os.path as osp
-import numpy as np
-import cv2
 
-import sys
+import numpy as np
+
 cur_dir = os.path.dirname(__file__)
 
 from utils_json import read_json_from_file
 
+
 class PoseTrackJoints(object):
     def __init__(self):
-        #{0-Rank    1-Rkne    2-Rhip    3-Lhip    4-Lkne    5-Lank    6-Rwri    7-Relb    8-Rsho    9-Lsho   10-Lelb    11-Lwri    12-neck  13-nose　14-TopHead}
+        # {0-Rank    1-Rkne    2-Rhip    3-Lhip    4-Lkne    5-Lank    6-Rwri    7-Relb    8-Rsho    9-Lsho   10-Lelb    11-Lwri    12-neck  13-nose　14-TopHead}
         self.kp_names = ['right_ankle', 'right_knee', 'right_pelvis',
                          'left_pelvis', 'left_knee', 'left_ankle',
                          'right_wrist', 'right_elbow', 'right_shoulder',
@@ -41,12 +40,12 @@ class PoseTrackJoints(object):
             if stage == 'train':
                 for aid, ann in enumerate(anns):
                     if ann["is_labeled"][0] == 0: continue
-                    if not ann["annorect"]:  #if it is empty
+                    if not ann["annorect"]:  # if it is empty
                         continue
 
                     num_candidates = len(ann["annorect"])
                     for candidate_id in range(0, num_candidates):
-                        if not ann["annorect"][candidate_id]["annopoints"]: continue  #list is empty
+                        if not ann["annorect"][candidate_id]["annopoints"]: continue  # list is empty
 
                         # (1) bbox
                         bbox = get_bbox_from_keypoints(ann["annorect"][candidate_id]["annopoints"][0]["point"])
@@ -61,31 +60,31 @@ class PoseTrackJoints(object):
                         # (2) joints
                         joints = get_joints_from_ann(ann["annorect"][candidate_id]["annopoints"][0]["point"])
                         num_points = len(ann["annorect"][candidate_id]["annopoints"][0]["point"])
-                        if np.sum(joints[2::3]) == 0 or num_points== 0:
+                        if np.sum(joints[2::3]) == 0 or num_points == 0:
                             continue
 
                         # (4) head_rect: useless
                         rect = np.array([0, 0, 1, 1], np.int32)
 
                         ''' This [humanData] is what [load_data] will provide '''
-                        humanData = dict(aid = aid, joints=joints, imgpath=imgpath, headRect=rect, bbox=bbox, imgid = ann['imgnum'][0])
+                        humanData = dict(aid=aid, joints=joints, imgpath=imgpath, headRect=rect, bbox=bbox, imgid=ann['imgnum'][0])
 
                         posetrack.append(humanData)
             elif stage == 'val':
                 for aid, ann in enumerate(anns):
                     if ann["is_labeled"][0] == 0: continue
-                    if not ann["annorect"]:  #if it is empty
+                    if not ann["annorect"]:  # if it is empty
                         continue
 
                     num_candidates = len(ann["annorect"])
                     for candidate_id in range(0, num_candidates):
-                        if not ann["annorect"][candidate_id]["annopoints"]: continue  #list is empty
+                        if not ann["annorect"][candidate_id]["annopoints"]: continue  # list is empty
 
                         imgname = ann["image"][0]["name"]
                         prefix = '../data/posetrack_data/'
                         imgpath = os.path.join(prefix, imgname)
 
-                        humanData = dict(imgid = aid, imgpath = imgpath)
+                        humanData = dict(imgid=aid, imgpath=imgpath)
                         posetrack.append(humanData)
             else:
                 print('PoseTrack data error, please check')
@@ -109,7 +108,7 @@ def get_joints_from_ann(keypoints_python_data):
 
     for i in range(15):
         if i not in keypoints_dict.keys():
-            keypoints_dict[i] = [0, 0, 0]  #Should we set them to zero? Yes! COCO dataset did this too.
+            keypoints_dict[i] = [0, 0, 0]  # Should we set them to zero? Yes! COCO dataset did this too.
 
     keypoints_list = []
     for i in range(15):
@@ -146,7 +145,7 @@ def get_bbox_from_keypoints(keypoints_python_data):
 
 
 def enlarge_bbox(bbox, scale):
-    assert(scale > 0)
+    assert (scale > 0)
     min_x, min_y, max_x, max_y = bbox
     margin_x = int(0.5 * scale * (max_x - min_x))
     margin_y = int(0.5 * scale * (max_y - min_y))
@@ -161,10 +160,10 @@ def enlarge_bbox(bbox, scale):
     width = max_x - min_x
     height = max_y - min_y
     if max_y < 0 or max_x < 0 or width <= 0 or height <= 0 or width > 2000 or height > 2000:
-        min_x=0
-        max_x=2
-        min_y=0
-        max_y=2
+        min_x = 0
+        max_x = 2
+        min_y = 0
+        max_y = 2
 
     bbox_enlarged = [min_x, min_y, max_x, max_y]
     return bbox_enlarged
@@ -173,4 +172,6 @@ def enlarge_bbox(bbox, scale):
 if __name__ == '__main__':
     joints = PoseTrackJoints()
     train, test = joints.load_data(min_kps=1)
-    from IPython import embed; embed()
+    from IPython import embed;
+
+    embed()

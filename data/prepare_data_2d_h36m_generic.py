@@ -7,20 +7,15 @@
 
 import argparse
 import os
-import zipfile
-import numpy as np
-import h5py
 import re
-from glob import glob
-from shutil import rmtree
-from data_utils import suggest_metadata, suggest_pose_importer
-import ipdb
-
 import sys
+from glob import glob
+
+import ipdb
+import numpy as np
+from data_utils import suggest_metadata, suggest_pose_importer
 
 sys.path.append('../')
-from common.utils import wrap
-from itertools import groupby
 
 output_prefix_2d = 'data_2d_h36m_'
 cam_map = {

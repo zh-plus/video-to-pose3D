@@ -1,25 +1,29 @@
 # copy from tensorpack: https://github.com/ppwwyyxx/tensorpack
-import numpy as np
-import threading
+import atexit
+import errno
+import logger
 import multiprocessing as mp
+import pprint
+import threading
+import uuid
 import weakref
 from contextlib import contextmanager
-from .serialize import loads, dumps
-import errno
-import uuid
-import os
-import zmq
-import atexit
-from itertools import cycle
 from copy import copy
-from .utils import get_rng
+from itertools import cycle
+
+import numpy as np
+import zmq
 from setproctitle import setproctitle
-import pprint, logger
+
+from .serialize import loads, dumps
+from .utils import get_rng
+
 
 def del_weakref(x):
     o = x()
     if o is not None:
         o.__del__()
+
 
 @contextmanager
 def _zmq_catch_error(name):
@@ -29,7 +33,7 @@ def _zmq_catch_error(name):
         print("[{}] Context terminated.".format(name))
         raise Exception
     except zmq.ZMQError as e:
-        if e.errno == errno.ENOTSOCK:       # socket closed
+        if e.errno == errno.ENOTSOCK:  # socket closed
             print("[{}] Socket closed.".format(name))
             raise Exception
         else:
@@ -37,12 +41,14 @@ def _zmq_catch_error(name):
     except Exception:
         raise
 
+
 class DataFlowReentrantGuard(object):
     """
     A tool to enforce non-reentrancy.
     Mostly used on DataFlow whose :meth:`get_data` is stateful,
     so that multiple instances of the iterator cannot co-exist.
     """
+
     def __init__(self):
         self._lock = threading.Lock()
 
@@ -54,6 +60,7 @@ class DataFlowReentrantGuard(object):
     def __exit__(self, exc_type, exc_val, exc_tb):
         self._lock.release()
         return False
+
 
 class DataFromList(object):
     def __init__(self, datalist, is_train=True, shuffle=True):
@@ -79,6 +86,7 @@ class DataFromList(object):
 
     def reset_state(self):
         self.rng = get_rng()
+
 
 class _ParallelMapData(object):
     def __init__(self, ds, buffer_size):
@@ -120,7 +128,7 @@ class _ParallelMapData(object):
             if ret is not None:
                 yield ret
 
-        self._iter = self.ds.get_data()   # refresh
+        self._iter = self.ds.get_data()  # refresh
         for _ in range(self._buffer_size):
             self._send(next(self._iter))
             ret = self._recv()
@@ -132,7 +140,7 @@ class _ParallelMapData(object):
         for dp in self._iter:
             self._send(dp)
             yield self._recv_filter_none()
-        self._iter = self.ds.get_data()   # refresh
+        self._iter = self.ds.get_data()  # refresh
 
         # first clear the buffer, then fill
         for k in range(self._buffer_size):
@@ -141,6 +149,7 @@ class _ParallelMapData(object):
             if k == self._buffer_size - 1:
                 self._fill_buffer()
             yield dp
+
 
 class MapData(object):
     """
@@ -171,6 +180,7 @@ class MapData(object):
     def reset_state(self):
         pass
 
+
 class MultiProcessMapDataZMQ(_ParallelMapData):
     """
     Same as :class:`MapData`, but start processes to run the mapping function,
@@ -186,6 +196,7 @@ class MultiProcessMapDataZMQ(_ParallelMapData):
            is guranteed to produce the exact set which `df.get_data()`
            produces. Although the order of data still isn't preserved.
     """
+
     class _Worker(mp.Process):
         def __init__(self, identity, map_func, pipename, hwm):
             super(MultiProcessMapDataZMQ._Worker, self).__init__()
@@ -254,7 +265,7 @@ class MultiProcessMapDataZMQ(_ParallelMapData):
         for p in self._procs:
             p.deamon = True
             p.start()
-        self._fill_buffer()     # pre-fill the bufer
+        self._fill_buffer()  # pre-fill the bufer
 
     def reset_state(self):
         if self._reset_done:
@@ -299,6 +310,7 @@ class MultiProcessMapDataZMQ(_ParallelMapData):
             print("{} successfully cleaned-up.".format(type(self).__name__))
         except Exception:
             pass
+
 
 class BatchData(object):
     """
@@ -363,7 +375,8 @@ class BatchData(object):
                         logger.error("Shape of all arrays to be batched: " + s)
                     try:
                         # open an ipython shell if possible
-                        import IPython as IP; IP.embed()    # noqa
+                        import IPython as IP;
+                        IP.embed()  # noqa
                     except ImportError:
                         pass
         return result

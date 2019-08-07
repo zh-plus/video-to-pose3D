@@ -3,11 +3,13 @@
 # Written by Jiefeng Li (jeff.lee.sjtu@gmail.com)
 # -----------------------------------------------------
 
-from utils.img import (load_image, drawGaussian, cropBox, transformBox, flip, shuffleLR)
-import torch
-import numpy as np
 import random
+
+import numpy as np
+import torch
 import torchsample.transforms as tr
+from utils.img import (load_image, drawGaussian, cropBox, transformBox, flip, shuffleLR)
+
 from opt import opt
 
 
@@ -16,7 +18,6 @@ def rnd(x):
 
 
 def generateSampleBox(img_path, bndbox, part, nJoints, imgset, scale_factor, dataset, train=True, nJoints_coco=17):
-
     img = load_image(img_path)
     if train:
         img[0].mul_(random.uniform(0.7, 1.3)).clamp_(0, 1)
@@ -76,7 +77,7 @@ def generateSampleBox(img_path, bndbox, part, nJoints, imgset, scale_factor, dat
     if imgset == 'coco':
         for i in range(17):
             if part[i][0] > 0 and part[i][0] > upLeft[0] and part[i][1] > upLeft[1] \
-               and part[i][0] < bottomRight[0] and part[i][1] < bottomRight[1]:
+                    and part[i][0] < bottomRight[0] and part[i][1] < bottomRight[1]:
                 jointNum += 1
 
     # Doing Random Crop
@@ -118,7 +119,7 @@ def generateSampleBox(img_path, bndbox, part, nJoints, imgset, scale_factor, dat
     if imgset == 'coco':
         for i in range(nJoints_coco):
             if part[i][0] > 0 and part[i][0] > upLeft[0] and part[i][1] > upLeft[1] \
-               and part[i][0] < bottomRight[0] and part[i][1] < bottomRight[1]:
+                    and part[i][0] < bottomRight[0] and part[i][1] < bottomRight[1]:
                 hm_part = transformBox(
                     part[i], upLeft, bottomRight, inputResH, inputResW, outputResH, outputResW)
 

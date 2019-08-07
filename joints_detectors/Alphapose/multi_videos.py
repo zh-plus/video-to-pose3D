@@ -1,6 +1,4 @@
 import ntpath
-import os
-import sys
 
 import cv2
 import torch.utils.data
@@ -18,6 +16,7 @@ if not args.sp:
     torch.multiprocessing.set_start_method('forkserver', force=True)
     torch.multiprocessing.set_sharing_strategy('file_system')
 
+
 def get_det_processor(file_name):
     videofile = file_name
     mode = args.mode
@@ -29,7 +28,7 @@ def get_det_processor(file_name):
 
     # Load input video
     data_loader = VideoLoader(videofile, batchSize=args.detbatch).start()
-    (fourcc,fps,frameSize) = data_loader.videoinfo()
+    (fourcc, fps, frameSize) = data_loader.videoinfo()
 
     # Load detection loader
     print('Loading YOLO model..')
@@ -51,7 +50,7 @@ def main(file_name):
 
     # Load input video
     data_loader = VideoLoader(videofile, batchSize=args.detbatch).start()
-    (fourcc,fps,frameSize) = data_loader.videoinfo()
+    (fourcc, fps, frameSize) = data_loader.videoinfo()
 
     # Load detection loader
     print('Loading YOLO model..')
@@ -75,10 +74,10 @@ def main(file_name):
     }
 
     # Data writer
-    save_path = os.path.join(args.outputpath, 'AlphaPose_'+ntpath.basename(videofile).split('.')[0]+'.avi')
+    save_path = os.path.join(args.outputpath, 'AlphaPose_' + ntpath.basename(videofile).split('.')[0] + '.avi')
     writer = DataWriter(args.save_video, save_path, cv2.VideoWriter_fourcc(*'XVID'), fps, frameSize).start()
 
-    im_names_desc =  tqdm(range(data_loader.length()))
+    im_names_desc = tqdm(range(data_loader.length()))
     batchSize = args.posebatch
     for i in im_names_desc:
         start_time = getTime()
@@ -101,7 +100,7 @@ def main(file_name):
             num_batches = datalen // batchSize + leftover
             hm = []
             for j in range(num_batches):
-                inps_j = inps[j*batchSize:min((j +  1)*batchSize, datalen)].cuda()
+                inps_j = inps[j * batchSize:min((j + 1) * batchSize, datalen)].cuda()
                 hm_j = pose_model(inps_j)
                 hm.append(hm_j)
             hm = torch.cat(hm)
@@ -109,7 +108,8 @@ def main(file_name):
             runtime_profile['pt'].append(pose_time)
 
             hm = hm.cpu().data
-            import ipdb;ipdb.set_trace()
+            import ipdb;
+            ipdb.set_trace()
             writer.save(boxes, scores, hm, pt1, pt2, orig_img, im_name.split('/')[-1])
 
             ckpt_time, post_time = getTime(ckpt_time)
@@ -118,19 +118,20 @@ def main(file_name):
         if args.profile:
             # TQDM
             im_names_desc.set_description(
-            'det time: {dt:.4f} | pose time: {pt:.4f} | post processing: {pn:.4f}'.format(
-                dt=np.mean(runtime_profile['dt']), pt=np.mean(runtime_profile['pt']), pn=np.mean(runtime_profile['pn']))
+                'det time: {dt:.4f} | pose time: {pt:.4f} | post processing: {pn:.4f}'.format(
+                    dt=np.mean(runtime_profile['dt']), pt=np.mean(runtime_profile['pt']), pn=np.mean(runtime_profile['pn']))
             )
 
     print('===========================> Finish Model Running.')
     if (args.save_img or args.save_video) and not args.vis_fast:
         print('===========================> Rendering remaining images in the queue...')
         print('===========================> If this step takes too long, you can enable the --vis_fast flag to use fast rendering (real-time).')
-    while(writer.running()):
+    while (writer.running()):
         pass
     writer.stop()
     final_result = writer.results()
     write_json(final_result, args.outputpath)
+
 
 if __name__ == "__main__":
     videodir = args.video
@@ -144,4 +145,3 @@ if __name__ == "__main__":
         print('---------------------------------------------------> process video ', item)
         video = os.path.join(videodir, item)
         main(video)
-

@@ -10,13 +10,15 @@
     M: # of instances within a frame (which is # of human candidates)
     V: # of graph nodes (which is 15)
 '''
-import numpy as np
 
-import sys, os
+import os
+import sys
+
 sys.path.append(os.path.abspath("../../"))
 
 from utils_json import *
 from utils_io_folder import *
+
 
 def load_data_for_gcn(dataset_str, dataset_split_str):
     if dataset_str == "posetrack_18":
@@ -63,17 +65,17 @@ def load_graph_pairs_from_json(json_file_path):
             candidate_dict = {"track_id": track_id,
                               "img_id": image_id,
                               "bbox": bbox,
-                              "keypoints":keypoints}
+                              "keypoints": keypoints}
             track_id_dict[track_id].append(candidate_dict)
 
     graph_pair_list_all = []
     for track_id in range(max_track_id):
         candidate_dict_list = track_id_dict[track_id]
-        candidate_dict_list_sorted = sorted(candidate_dict_list, key=lambda k:k['img_id'])
+        candidate_dict_list_sorted = sorted(candidate_dict_list, key=lambda k: k['img_id'])
 
         graph_pair_list = get_graph_pairs(candidate_dict_list_sorted)
         graph_pair_list_all.extend(graph_pair_list)
-    return  graph_pair_list_all
+    return graph_pair_list_all
 
 
 def get_graph_pairs(candidate_dict_list_sorted):
@@ -116,55 +118,54 @@ def validate_bbox(bbox):
 
 def keypoints_to_graph(keypoints, bbox):
     num_elements = len(keypoints)
-    num_keypoints = num_elements/3
-    assert(num_keypoints == 15)
+    num_keypoints = num_elements / 3
+    assert (num_keypoints == 15)
 
     x0, y0, w, h = bbox
     flag_pass_check = True
 
-    graph = 15*[(0, 0)]
+    graph = 15 * [(0, 0)]
     for id in range(15):
         # normalize the corrdinates: mean 0, standard deviation 1
-        x = keypoints[3*id] - x0
-        y = keypoints[3*id+1] - y0
+        x = keypoints[3 * id] - x0
+        y = keypoints[3 * id + 1] - y0
 
-        score = keypoints[3*id+2]
+        score = keypoints[3 * id + 2]
         graph[id] = (int(x), int(y))
     return graph, flag_pass_check
 
 
-
-python_data_example =  {
+python_data_example = {
     "version": "1.0",
-	"image": [
-	       {
-		      "folder": "images/bonn_5sec/000342_mpii",
-		      "name": "00000001.jpg",
-              "id" : 0,
-	       }
-    ],
-    "candidates":[
+    "image": [
         {
-          "det_category" : 1,
-          "det_bbox" : [300,300,100,100],
-          "det_score" : [0.9],
+            "folder": "images/bonn_5sec/000342_mpii",
+            "name": "00000001.jpg",
+            "id": 0,
+        }
+    ],
+    "candidates": [
+        {
+            "det_category": 1,
+            "det_bbox": [300, 300, 100, 100],
+            "det_score": [0.9],
 
-          "pose_order" : [1,2,3],
-          "pose_keypoints_2d" : [10,10,0.9, 20,20,0.9, 30,30,0.8],
+            "pose_order": [1, 2, 3],
+            "pose_keypoints_2d": [10, 10, 0.9, 20, 20, 0.9, 30, 30, 0.8],
 
-		  "track_id": [0],
-		  "track_score": [0.8],
+            "track_id": [0],
+            "track_score": [0.8],
         },
         {
-          "det_category" : 2,
-          "det_bbox" : [300,300,100,100],
-          "det_score" : [0.1],
+            "det_category": 2,
+            "det_bbox": [300, 300, 100, 100],
+            "det_score": [0.1],
 
-          "pose_order" : [1,2,3],
-          "pose_keypoints_2d" : [10,10,0.9, 20,20,0.9, 30,30,0.8],
+            "pose_order": [1, 2, 3],
+            "pose_keypoints_2d": [10, 10, 0.9, 20, 20, 0.9, 30, 30, 0.8],
 
-		  "track_id": [1],
-		  "track_score": [0.6],
+            "track_id": [1],
+            "track_score": [0.6],
         }
-     ]
+    ]
 }

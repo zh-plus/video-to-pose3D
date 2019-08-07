@@ -8,20 +8,19 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-from collections import defaultdict
-from collections import OrderedDict
 import logging
 import os
+from collections import OrderedDict
+from collections import defaultdict
 
-from pycocotools.coco import COCO
-from pycocotools.cocoeval import COCOeval
 import json_tricks as json
 import numpy as np
+from pycocotools.coco import COCO
+from pycocotools.cocoeval import COCOeval
 
 from lib.dataset.JointsDataset import JointsDataset
 from lib.nms.nms import oks_nms
 from lib.nms.nms import soft_oks_nms
-
 
 logger = logging.getLogger(__name__)
 
@@ -51,6 +50,7 @@ class COCODataset(JointsDataset):
         [16,14],[14,12],[17,15],[15,13],[12,13],[6,12],[7,13], [6,7],[6,8],
         [7,9],[8,10],[9,11],[2,3],[1,2],[1,3],[2,4],[3,5],[4,6],[5,7]]
     '''
+
     def __init__(self, cfg, root, image_set, is_train, transform=None):
         super().__init__(cfg, root, image_set, is_train, transform)
         self.nms_thre = cfg.TEST.NMS_THRE
@@ -167,7 +167,7 @@ class COCODataset(JointsDataset):
             x2 = np.min((width - 1, x1 + np.max((0, w - 1))))
             y2 = np.min((height - 1, y1 + np.max((0, h - 1))))
             if obj['area'] > 0 and x2 >= x1 and y2 >= y1:
-                obj['clean_bbox'] = [x1, y1, x2-x1, y2-y1]
+                obj['clean_bbox'] = [x1, y1, x2 - x1, y2 - y1]
                 valid_objs.append(obj)
         objs = valid_objs
 

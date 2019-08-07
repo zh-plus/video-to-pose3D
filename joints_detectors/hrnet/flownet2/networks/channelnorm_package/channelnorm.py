@@ -1,6 +1,7 @@
+import channelnorm_cuda
 from torch.autograd import Function, Variable
 from torch.nn.modules.module import Module
-import channelnorm_cuda
+
 
 class ChannelNormFunction(Function):
 
@@ -23,7 +24,7 @@ class ChannelNormFunction(Function):
         grad_input1 = Variable(input1.new(input1.size()).zero_())
 
         channelnorm_cuda.backward(input1, output, grad_output.data,
-                                              grad_input1.data, ctx.norm_deg)
+                                  grad_input1.data, ctx.norm_deg)
 
         return grad_input1, None
 
@@ -36,4 +37,3 @@ class ChannelNorm(Module):
 
     def forward(self, input1):
         return ChannelNormFunction.apply(input1, self.norm_deg)
-

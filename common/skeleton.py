@@ -7,27 +7,28 @@
 
 import numpy as np
 
+
 class Skeleton:
     def __init__(self, parents, joints_left, joints_right):
         assert len(joints_left) == len(joints_right)
-        
+
         self._parents = np.array(parents)
         self._joints_left = joints_left
         self._joints_right = joints_right
         self._compute_metadata()
-    
+
     def num_joints(self):
         return len(self._parents)
-    
+
     def parents(self):
         return self._parents
-    
+
     def has_children(self):
         return self._has_children
-    
+
     def children(self):
         return self._children
-    
+
     def remove_joints(self, joints_to_remove):
         """
         Remove the joints specified in 'joints_to_remove'.
@@ -40,7 +41,7 @@ class Skeleton:
         for i in range(len(self._parents)):
             while self._parents[i] in joints_to_remove:
                 self._parents[i] = self._parents[self._parents[i]]
-                
+
         index_offsets = np.zeros(len(self._parents), dtype=int)
         new_parents = []
         for i, parent in enumerate(self._parents):
@@ -49,8 +50,7 @@ class Skeleton:
             else:
                 index_offsets[i:] += 1
         self._parents = np.array(new_parents)
-        
-        
+
         if self._joints_left is not None:
             new_joints_left = []
             for joint in self._joints_left:
@@ -65,15 +65,15 @@ class Skeleton:
             self._joints_right = new_joints_right
 
         self._compute_metadata()
-        
+
         return valid_joints
-    
+
     def joints_left(self):
         return self._joints_left
-    
+
     def joints_right(self):
         return self._joints_right
-        
+
     def _compute_metadata(self):
         self._has_children = np.zeros(len(self._parents)).astype(bool)
         for i, parent in enumerate(self._parents):

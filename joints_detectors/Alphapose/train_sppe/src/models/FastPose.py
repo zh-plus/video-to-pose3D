@@ -4,7 +4,6 @@
 # -----------------------------------------------------
 
 import torch.nn as nn
-
 from models.layers.DUC import DUC
 from models.layers.SE_Resnet import SEResnet
 

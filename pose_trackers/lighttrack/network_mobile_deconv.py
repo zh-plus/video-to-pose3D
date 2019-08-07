@@ -21,16 +21,15 @@ class Network(ModelDesc):
 
         x = [i for i in range(output_shape[1])]
         y = [i for i in range(output_shape[0])]
-        xx,yy = tf.meshgrid(x,y)
-        xx = tf.reshape(tf.to_float(xx), (1,*output_shape,1))
-        yy = tf.reshape(tf.to_float(yy), (1,*output_shape,1))
+        xx, yy = tf.meshgrid(x, y)
+        xx = tf.reshape(tf.to_float(xx), (1, *output_shape, 1))
+        yy = tf.reshape(tf.to_float(yy), (1, *output_shape, 1))
 
-        x = tf.floor(tf.reshape(coord[:,:,0],[-1,1,1,cfg.nr_skeleton]) / cfg.data_shape[1] * output_shape[1] + 0.5)
-        y = tf.floor(tf.reshape(coord[:,:,1],[-1,1,1,cfg.nr_skeleton]) / cfg.data_shape[0] * output_shape[0] + 0.5)
+        x = tf.floor(tf.reshape(coord[:, :, 0], [-1, 1, 1, cfg.nr_skeleton]) / cfg.data_shape[1] * output_shape[1] + 0.5)
+        y = tf.floor(tf.reshape(coord[:, :, 1], [-1, 1, 1, cfg.nr_skeleton]) / cfg.data_shape[0] * output_shape[0] + 0.5)
 
-        heatmap = tf.exp(-(((xx-x)/tf.to_float(sigma))**2)/tf.to_float(2) -(((yy-y)/tf.to_float(sigma))**2)/tf.to_float(2))
+        heatmap = tf.exp(-(((xx - x) / tf.to_float(sigma)) ** 2) / tf.to_float(2) - (((yy - y) / tf.to_float(sigma)) ** 2) / tf.to_float(2))
         return heatmap * 255.
-
 
     def head_net(self, blocks, is_training, trainable=True):
 
@@ -39,27 +38,25 @@ class Network(ModelDesc):
         xavier_initializer = tf.contrib.layers.xavier_initializer()
 
         with slim.arg_scope(mobilenet_v1_arg_scope(is_training=is_training)):
-
             out = slim.conv2d_transpose(blocks, 256, [4, 4], stride=2,
-                trainable=trainable, weights_initializer=normal_initializer,
-                padding='SAME', activation_fn=tf.nn.relu,
-                scope='up1')
+                                        trainable=trainable, weights_initializer=normal_initializer,
+                                        padding='SAME', activation_fn=tf.nn.relu,
+                                        scope='up1')
             out = slim.conv2d_transpose(out, 256, [4, 4], stride=2,
-                trainable=trainable, weights_initializer=normal_initializer,
-                padding='SAME', activation_fn=tf.nn.relu,
-                scope='up2')
+                                        trainable=trainable, weights_initializer=normal_initializer,
+                                        padding='SAME', activation_fn=tf.nn.relu,
+                                        scope='up2')
             out = slim.conv2d_transpose(out, 256, [4, 4], stride=2,
-                trainable=trainable, weights_initializer=normal_initializer,
-                padding='SAME', activation_fn=tf.nn.relu,
-                scope='up3')
+                                        trainable=trainable, weights_initializer=normal_initializer,
+                                        padding='SAME', activation_fn=tf.nn.relu,
+                                        scope='up3')
 
             out = slim.conv2d(out, cfg.nr_skeleton, [1, 1],
-                    trainable=trainable, weights_initializer=msra_initializer,
-                    padding='SAME', normalizer_fn=None, activation_fn=None,
-                    scope='out')
+                              trainable=trainable, weights_initializer=msra_initializer,
+                              padding='SAME', normalizer_fn=None, activation_fn=None,
+                              scope='out')
 
         return out
-
 
     def make_data(self):
         from COCOAllJoints import COCOJoints
@@ -108,7 +105,7 @@ class Network(ModelDesc):
                 for i in range(cfg.batch_size):
                     sub_loss = loss[i]
                     topk_val, topk_idx = tf.nn.top_k(sub_loss, k=top_k, sorted=False, name='ohkm{}'.format(i))
-                    tmp_loss = tf.gather(sub_loss, topk_idx, name='ohkm_loss{}'.format(i)) # can be ignore ???
+                    tmp_loss = tf.gather(sub_loss, topk_idx, name='ohkm_loss{}'.format(i))  # can be ignore ???
                     ohkm_loss += tf.reduce_sum(tmp_loss) / top_k
                 ohkm_loss /= cfg.batch_size
                 return ohkm_loss
@@ -120,6 +117,7 @@ class Network(ModelDesc):
             self.set_loss(loss)
         else:
             self.set_outputs(heatmap_outs)
+
 
 if __name__ == '__main__':
     def parse_args():
@@ -139,6 +137,8 @@ if __name__ == '__main__':
             args.gpu_ids = ','.join(map(lambda x: str(x), list(range(*gpus))))
 
         return args
+
+
     args = parse_args()
 
     cfg.set_args(args.gpu_ids, args.continue_train)

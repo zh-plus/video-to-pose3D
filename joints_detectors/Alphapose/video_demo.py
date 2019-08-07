@@ -1,8 +1,4 @@
-from opt import opt
-
 import ntpath
-import os
-import sys
 
 import cv2
 from tqdm import tqdm
@@ -33,7 +29,7 @@ if __name__ == "__main__":
     # Load input video
     # 每次取50个frame
     data_loader = VideoLoader(videofile, batchSize=args.detbatch).start()
-    (fourcc,fps,frameSize) = data_loader.videoinfo()
+    (fourcc, fps, frameSize) = data_loader.videoinfo()
 
     print('the video is {} f/s'.format(fps))
 
@@ -60,10 +56,10 @@ if __name__ == "__main__":
     }
 
     # Data writer
-    save_path = os.path.join(args.outputpath, 'AlphaPose_'+ntpath.basename(videofile).split('.')[0]+'.avi')
+    save_path = os.path.join(args.outputpath, 'AlphaPose_' + ntpath.basename(videofile).split('.')[0] + '.avi')
     writer = DataWriter(args.save_video, save_path, cv2.VideoWriter_fourcc(*'XVID'), fps, frameSize).start()
 
-    im_names_desc =  tqdm(range(data_loader.length()))
+    im_names_desc = tqdm(range(data_loader.length()))
     batchSize = args.posebatch
     for i in im_names_desc:
         start_time = getTime()
@@ -86,7 +82,7 @@ if __name__ == "__main__":
             num_batches = datalen // batchSize + leftover
             hm = []
             for j in range(num_batches):
-                inps_j = inps[j*batchSize:min((j +  1)*batchSize, datalen)].cuda()
+                inps_j = inps[j * batchSize:min((j + 1) * batchSize, datalen)].cuda()
                 hm_j = pose_model(inps_j)
                 hm.append(hm_j)
             hm = torch.cat(hm)
@@ -103,14 +99,14 @@ if __name__ == "__main__":
         if args.profile:
             # TQDM
             im_names_desc.set_description(
-            'det time: {dt:.4f} | pose time: {pt:.4f} | post processing: {pn:.4f}'.format(
-                dt=np.mean(runtime_profile['dt']), pt=np.mean(runtime_profile['pt']), pn=np.mean(runtime_profile['pn']))
+                'det time: {dt:.4f} | pose time: {pt:.4f} | post processing: {pn:.4f}'.format(
+                    dt=np.mean(runtime_profile['dt']), pt=np.mean(runtime_profile['pt']), pn=np.mean(runtime_profile['pn']))
             )
 
     if (args.save_img or args.save_video) and not args.vis_fast:
         print('===========================> Rendering remaining images in the queue...')
         print('===========================> If this step takes too long, you can enable the --vis_fast flag to use fast rendering (real-time).')
-    while(writer.running()):
+    while (writer.running()):
         pass
     writer.stop()
     final_result = writer.results()
@@ -120,15 +116,12 @@ if __name__ == "__main__":
         kpt = final_result[i]['result'][0]['keypoints']
         kpts.append(kpt.data.numpy())
 
-    import ipdb;ipdb.set_trace()
-    filename = os.path.basename(args.video).split('.')[0] 
-    name = '/home/xyliu/experiments/VideoPose3D/data/'+filename
+    import ipdb;
+
+    ipdb.set_trace()
+    filename = os.path.basename(args.video).split('.')[0]
+    name = '/home/xyliu/experiments/VideoPose3D/data/' + filename
     kpts = np.array(kpts).astype(np.float32)
     np.savez_compressed(name, kpts=kpts)
-
-
-
-
-
 
     write_json(final_result, args.outputpath)

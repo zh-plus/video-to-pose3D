@@ -4,9 +4,12 @@
     Dec, 2016
 '''
 
-import sys, os
+import os
+import sys
+
 sys.path.append(os.path.abspath("../utils/"))
 from utils_natural_sort import *
+
 
 def test_natural_sort():
     test_string_list_desired = ['A00001', 'A00002', 'A00010', 'A00011', 'B00001', 'B00002', 'B00010', 'B00011']

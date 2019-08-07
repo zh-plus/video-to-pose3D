@@ -1,9 +1,10 @@
 import os
-import numpy as np
-import cv2
-from HPE.config import cfg
 import random
 import time
+
+import cv2
+import numpy as np
+from HPE.config import cfg
 
 
 def data_augmentation(trainData, trainLabel, trainValids, segms=None):
@@ -39,7 +40,7 @@ def data_augmentation(trainData, trainLabel, trainValids, segms=None):
             annot[i << 1] = (annot[i << 1] - center[0]) / halfl_w * (width - center[0]) + center[0]
             annot[i << 1 | 1] = (annot[i << 1 | 1] - center[1]) / halfl_h * (height - center[1]) + center[1]
             annot_valid[i] *= (
-            (annot[i << 1] >= 0) & (annot[i << 1] < width) & (annot[i << 1 | 1] >= 0) & (annot[i << 1 | 1] < height))
+                    (annot[i << 1] >= 0) & (annot[i << 1] < width) & (annot[i << 1 | 1] >= 0) & (annot[i << 1 | 1] < height))
 
         trainData[lab] = img.transpose(2, 0, 1)
         if trainSegms is not None:
@@ -111,6 +112,7 @@ def data_augmentation(trainData, trainLabel, trainValids, segms=None):
     else:
         return trainData, trainLabel, trainValids
 
+
 def joints_heatmap_gen(data, label, tar_size=cfg.output_shape, ori_size=cfg.data_shape, points=cfg.nr_skeleton,
                        return_valid=False, gaussian_kernel=cfg.gaussain_kernel):
     if return_valid:
@@ -140,7 +142,8 @@ def joints_heatmap_gen(data, label, tar_size=cfg.output_shape, ori_size=cfg.data
     else:
         return ret
 
-def Preprocessing(d, raw_img = None, stage='train'):
+
+def Preprocessing(d, raw_img=None, stage='train'):
     height, width = cfg.data_shape
     imgs = []
     labels = []
@@ -149,10 +152,10 @@ def Preprocessing(d, raw_img = None, stage='train'):
         segms = []
 
     vis = False
-    #vis = True
+    # vis = True
 
     if raw_img is None:
-        #img = cv2.imread(os.path.join(cfg.img_path, d['imgpath']))
+        # img = cv2.imread(os.path.join(cfg.img_path, d['imgpath']))
         img = cv2.imread(os.path.join(d['imgpath']))
         while img is None:
             time.sleep(np.random.rand() * 5)
@@ -219,7 +222,7 @@ def Preprocessing(d, raw_img = None, stage='train'):
         from utils.visualize import draw_skeleton
         draw_skeleton(tmpimg, label.astype(int), False, "PoseTrack")
         cv2.imwrite('vis.jpg', tmpimg)
-        #from IPython import embed; embed()
+        # from IPython import embed; embed()
 
     img = img - cfg.pixel_means
     if cfg.pixel_norm:

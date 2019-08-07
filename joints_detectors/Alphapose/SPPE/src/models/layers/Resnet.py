@@ -34,6 +34,7 @@ class Bottleneck(nn.Module):
 
 class ResNet(nn.Module):
     """ Resnet """
+
     def __init__(self, architecture):
         super(ResNet, self).__init__()
         assert architecture in ["resnet50", "resnet101"]

@@ -7,10 +7,7 @@
     Compare with GCN.
 '''
 
-import torch
 import torch.nn as nn
-import torch.nn.functional as F
-from torch.autograd import Variable
 
 
 class Model(nn.Module):
@@ -37,15 +34,12 @@ class Model(nn.Module):
                  edge_importance_weighting, **kwargs):
         super().__init__()
 
-
     def forward(self, input_1, input_2):  # siamese network needs two times of forwards
         feature_1 = self.extract_feature(input_1)
         feature_2 = self.extract_feature(input_2)
         return feature_1, feature_2
 
-
     def extract_feature(self, x):
-
         # data normalization
         N, C, T, V, M = x.size()
         x = x.view(N, -1)

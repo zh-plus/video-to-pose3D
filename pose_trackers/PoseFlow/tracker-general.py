@@ -15,15 +15,14 @@ Copyright 2018 - 2018 Shanghai Jiao Tong University, Machine Vision and Intellig
 import argparse
 import copy
 import json
+from collections import defaultdict
 
 import matplotlib.pyplot as plt
 from tqdm import tqdm
-from collections import defaultdict
 
 from PoseFlow.matching import orb_matching
 from PoseFlow.utils import *
 from PoseFlow.visualization import display_pose
-
 from common.utils import Timer, calculate_area
 
 

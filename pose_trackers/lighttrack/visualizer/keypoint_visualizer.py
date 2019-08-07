@@ -5,9 +5,11 @@
     E-mail: guanghan.ning@jd.com
     Created on June 18th, 2018
 '''
+import os
+import sys
+
 import cv2
 import numpy as np
-import sys, os
 
 sys.path.append(os.path.abspath("../../../utility/"))
 from lighttrack.utils.utils_io_file import is_image

@@ -649,9 +649,9 @@ def get_keypoints_from_pose(pose_heatmaps, details, cls_skeleton, crops, start_i
         crops[test_image_id, :] = details[test_image_id - start_id, :]
         for w in range(cfg.nr_skeleton):
             cls_skeleton[test_image_id, w, 0] = cls_skeleton[test_image_id, w, 0] / cfg.data_shape[1] * (
-                        crops[test_image_id][2] - crops[test_image_id][0]) + crops[test_image_id][0]
+                    crops[test_image_id][2] - crops[test_image_id][0]) + crops[test_image_id][0]
             cls_skeleton[test_image_id, w, 1] = cls_skeleton[test_image_id, w, 1] / cfg.data_shape[0] * (
-                        crops[test_image_id][3] - crops[test_image_id][1]) + crops[test_image_id][1]
+                    crops[test_image_id][3] - crops[test_image_id][1]) + crops[test_image_id][1]
     return cls_skeleton
 
 

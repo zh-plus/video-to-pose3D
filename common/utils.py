@@ -4,16 +4,16 @@
 # This source code is licensed under the license found in the
 # LICENSE file in the root directory of this source tree.
 #
+import hashlib
 import os
+import pathlib
 import shutil
 import sys
+import time
 
 import cv2
-import pathlib
-import torch
 import numpy as np
-import hashlib
-import time
+import torch
 
 
 def wrap(func, *args, unsqueeze=False):

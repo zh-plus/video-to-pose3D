@@ -1,8 +1,6 @@
 #!/usr/bin/env python3
-import os
-import torch
 
-from setuptools import setup, find_packages
+from setuptools import setup
 from torch.utils.cpp_extension import BuildExtension, CUDAExtension
 
 cxx_args = ['-std=c++11']

@@ -1,18 +1,17 @@
 #!/usr/bin/env python2.7
 
+import argparse
+import os
+import sys
+import tempfile
+
 import caffe
-from caffe.proto import caffe_pb2
-import sys, os
-
-import torch
-import torch.nn as nn
-
-import argparse, tempfile
 import numpy as np
+import torch
 
 parser = argparse.ArgumentParser()
 parser.add_argument('caffe_model', help='input model in hdf5 or caffemodel format')
-parser.add_argument('prototxt_template',help='prototxt template')
+parser.add_argument('prototxt_template', help='prototxt template')
 parser.add_argument('flownet2_pytorch', help='path to flownet2')
 
 args = parser.parse_args()
@@ -29,16 +28,16 @@ from utils.param_utils import *
 
 width = 256
 height = 256
-keys = {'TARGET_WIDTH': width, 
+keys = {'TARGET_WIDTH': width,
         'TARGET_HEIGHT': height,
-        'ADAPTED_WIDTH':width,
-        'ADAPTED_HEIGHT':height,
-        'SCALE_WIDTH':1.,
-        'SCALE_HEIGHT':1.,}
+        'ADAPTED_WIDTH': width,
+        'ADAPTED_HEIGHT': height,
+        'SCALE_WIDTH': 1.,
+        'SCALE_HEIGHT': 1., }
 
 template = '\n'.join(np.loadtxt(args.prototxt_template, dtype=str, delimiter='\n'))
 for k in keys:
-    template = template.replace('$%s$'%(k),str(keys[k]))
+    template = template.replace('$%s$' % (k), str(keys[k]))
 
 prototxt = tempfile.NamedTemporaryFile(mode='w', delete=True)
 prototxt.write(template)
@@ -132,6 +131,6 @@ elif 'FlowNet2-SD/' in args.caffe_model:
     torch.save(state, os.path.join(args.flownet2_pytorch, 'FlowNet2-SD_checkpoint.pth.tar'))
 
 else:
-    print(('model type cound not be determined from input caffe model %s'%(args.caffe_model)))
+    print(('model type cound not be determined from input caffe model %s' % (args.caffe_model)))
     quit()
 print(("done converting ", args.caffe_model))

@@ -14,27 +14,22 @@ import pprint
 import shutil
 
 import torch
-import torch.nn.parallel
 import torch.backends.cudnn as cudnn
+import torch.nn.parallel
 import torch.optim
 import torch.utils.data
 import torch.utils.data.distributed
 import torchvision.transforms as transforms
-from tensorboardX import SummaryWriter
-
-import _init_paths
 from config import cfg
 from config import update_config
-from core.loss import JointsMSELoss
 from core.function import train
 from core.function import validate
-from utils.utils import get_optimizer
-from utils.utils import save_checkpoint
+from core.loss import JointsMSELoss
+from tensorboardX import SummaryWriter
 from utils.utils import create_logger
 from utils.utils import get_model_summary
-
-import dataset
-import models
+from utils.utils import get_optimizer
+from utils.utils import save_checkpoint
 
 
 def parse_args():
@@ -77,7 +72,7 @@ def copy_prev_models(prev_models_dir, model_dir):
     import shutil
 
     vc_folder = '/hdfs/' \
-        + '/' + os.environ['PHILLY_VC']
+                + '/' + os.environ['PHILLY_VC']
     source = prev_models_dir
     # If path is set as "sys/jobs/application_1533861538020_2366/models" prefix with the location of vc folder
     source = vc_folder + '/' + source if not source.startswith(vc_folder) \
@@ -115,7 +110,7 @@ def main():
     torch.backends.cudnn.deterministic = cfg.CUDNN.DETERMINISTIC
     torch.backends.cudnn.enabled = cfg.CUDNN.ENABLED
 
-    model = eval('models.'+cfg.MODEL.NAME+'.get_pose_net')(
+    model = eval('models.' + cfg.MODEL.NAME + '.get_pose_net')(
         cfg, is_train=True
     )
 
@@ -135,7 +130,7 @@ def main():
     dump_input = torch.rand(
         (1, 3, cfg.MODEL.IMAGE_SIZE[1], cfg.MODEL.IMAGE_SIZE[0])
     )
-    writer_dict['writer'].add_graph(model, (dump_input, ))
+    writer_dict['writer'].add_graph(model, (dump_input,))
 
     logger.info(get_model_summary(model, dump_input))
 
@@ -150,14 +145,14 @@ def main():
     normalize = transforms.Normalize(
         mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]
     )
-    train_dataset = eval('dataset.'+cfg.DATASET.DATASET)(
+    train_dataset = eval('dataset.' + cfg.DATASET.DATASET)(
         cfg, cfg.DATASET.ROOT, cfg.DATASET.TRAIN_SET, True,
         transforms.Compose([
             transforms.ToTensor(),
             normalize,
         ])
     )
-    valid_dataset = eval('dataset.'+cfg.DATASET.DATASET)(
+    valid_dataset = eval('dataset.' + cfg.DATASET.DATASET)(
         cfg, cfg.DATASET.ROOT, cfg.DATASET.TEST_SET, False,
         transforms.Compose([
             transforms.ToTensor(),
@@ -167,14 +162,14 @@ def main():
 
     train_loader = torch.utils.data.DataLoader(
         train_dataset,
-        batch_size=cfg.TRAIN.BATCH_SIZE_PER_GPU*len(cfg.GPUS),
+        batch_size=cfg.TRAIN.BATCH_SIZE_PER_GPU * len(cfg.GPUS),
         shuffle=cfg.TRAIN.SHUFFLE,
         num_workers=cfg.WORKERS,
         pin_memory=cfg.PIN_MEMORY
     )
     valid_loader = torch.utils.data.DataLoader(
         valid_dataset,
-        batch_size=cfg.TEST.BATCH_SIZE_PER_GPU*len(cfg.GPUS),
+        batch_size=cfg.TEST.BATCH_SIZE_PER_GPU * len(cfg.GPUS),
         shuffle=False,
         num_workers=cfg.WORKERS,
         pin_memory=cfg.PIN_MEMORY
@@ -212,7 +207,6 @@ def main():
         # train for one epoch
         train(cfg, train_loader, model, criterion, optimizer, epoch,
               final_output_dir, tb_log_dir, writer_dict)
-
 
         # evaluate on validation set
         perf_indicator = validate(

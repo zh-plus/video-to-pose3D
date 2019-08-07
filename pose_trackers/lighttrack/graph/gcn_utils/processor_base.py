@@ -1,22 +1,17 @@
 #!/usr/bin/env python
 # pylint: disable=W0201
-import sys
 import argparse
-import yaml
-import numpy as np
 
 # torch
 import torch
-import torch.nn as nn
-import torch.optim as optim
-
 # torchlight
 import torchlight
-from torchlight import str2bool
 from torchlight import DictAction
 from torchlight import import_class
+from torchlight import str2bool
 
 from .io import IO
+
 
 class Processor(IO):
     """
@@ -73,7 +68,7 @@ class Processor(IO):
 
     def show_iter_info(self):
         if self.meta_info['iter'] % self.arg.log_interval == 0:
-            info ='\tIter {} Done.'.format(self.meta_info['iter'])
+            info = '\tIter {} Done.'.format(self.meta_info['iter'])
             for k, v in self.iter_info.items():
                 if isinstance(v, float):
                     info = info + ' | {}: {:.4f}'.format(k, v)
@@ -149,9 +144,9 @@ class Processor(IO):
     @staticmethod
     def get_parser(add_help=False):
 
-        #region arguments yapf: disable
+        # region arguments yapf: disable
         # parameter priority: command line > config > default
-        parser = argparse.ArgumentParser( add_help=add_help, description='Base Processor')
+        parser = argparse.ArgumentParser(add_help=add_help, description='Base Processor')
 
         parser.add_argument('-w', '--work_dir', default='./work_dir/tmp', help='the work folder for storing results')
         parser.add_argument('-c', '--config', default=None, help='path to the configuration file')
@@ -185,7 +180,8 @@ class Processor(IO):
         parser.add_argument('--model', default=None, help='the model will be used')
         parser.add_argument('--model_args', action=DictAction, default=dict(), help='the arguments of model')
         parser.add_argument('--weights', default=None, help='the weights for network initialization')
-        parser.add_argument('--ignore_weights', type=str, default=[], nargs='+', help='the name of weights which will be ignored in the initialization')
-        #endregion yapf: enable
+        parser.add_argument('--ignore_weights', type=str, default=[], nargs='+',
+                            help='the name of weights which will be ignored in the initialization')
+        # endregion yapf: enable
 
         return parser

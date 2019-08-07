@@ -6,10 +6,12 @@
     E-mail: gnxr9@mail.missouri.edu
     Dec, 2016
 '''
+from collections import namedtuple
+
 import cv2
 import numpy as np
-from collections import namedtuple
-#from scipy.stats import threshold
+
+# from scipy.stats import threshold
 
 Struct_joint_blob = namedtuple("Struct_joint_blob", "heatmap_id, blob_id, blob_pos, blob_diameter, blob_response")
 '''
@@ -21,7 +23,8 @@ num_joints = 14
 # For Mask-rcnn dataset
 img_size = 56
 num_joints = 17
-valid_heatmap_ids = [13, 14, 15, 16] # left knee, right knee, left ankle, right ankle
+valid_heatmap_ids = [13, 14, 15, 16]  # left knee, right knee, left ankle, right ankle
+
 
 def find_joints_in_heatmaps_nms_selected(heatmaps, joints_from_max):
     joint_blobs_list = find_joint_blobs_list_in_heatmaps(heatmaps)
@@ -32,7 +35,7 @@ def find_joints_in_heatmaps_nms_selected(heatmaps, joints_from_max):
     joints = []
     selected_joint_index = []
 
-    while(True):
+    while (True):
         if joint_blob_list == []: break
         max_joint_blob = joint_blob_list[0]
         selected_joint_blob_list.append(max_joint_blob)
@@ -98,7 +101,7 @@ def is_overlapped(blob_1, blob_2):
     pt2 = blob_2.blob_pos
     diameter_1 = blob_1.blob_diameter
     diameter_2 = blob_2.blob_diameter
-    if dist(pt1, pt2) <= (diameter_1 + diameter_2)*0.5:
+    if dist(pt1, pt2) <= (diameter_1 + diameter_2) * 0.5:
         return True
     else:
         return False
@@ -106,17 +109,17 @@ def is_overlapped(blob_1, blob_2):
 
 def remove_blob_from_joint_blob_list(joint_blob_list, joint_blob_index):
     for index in sorted(joint_blob_index, reverse=True):
-        del(joint_blob_list[index])
+        del (joint_blob_list[index])
     return joint_blob_list
 
 
 def sort_joint_blob_list_by_response(joint_blob_list):
-    joint_blob_list.sort(key= lambda x: x.blob_response, reverse = False)
+    joint_blob_list.sort(key=lambda x: x.blob_response, reverse=False)
     return joint_blob_list
 
 
 def sort_joint_blob_list_by_heatmapid(joint_blob_list):
-    joint_blob_list.sort(key= lambda x: x.heatmap_id, reverse = False)
+    joint_blob_list.sort(key=lambda x: x.heatmap_id, reverse=False)
     return joint_blob_list
 
 
@@ -147,15 +150,15 @@ def convert_blobs_list_to_blob_list(joint_blobs_list):
     return joint_blob_list
 
 
-def find_joint_blobs_in_heatmap(heatmap, heatmap_id = 0):
+def find_joint_blobs_in_heatmap(heatmap, heatmap_id=0):
     heatmap = normalize_heatmap(heatmap)
-    blobs = find_blobs_in_heatmap(heatmap, flag_show_blobs = False)
+    blobs = find_blobs_in_heatmap(heatmap, flag_show_blobs=False)
 
     joint_blobs = []
 
     for blob_id, blob in enumerate(blobs):
-        #print(blob.pt[1], blob.pt[0])
-        #joint_blob = Struct_joint_blob(heatmap_id, blob_id, blob.pt, blob.size, heatmap[blob.pt[1]][blob.pt[0]])
+        # print(blob.pt[1], blob.pt[0])
+        # joint_blob = Struct_joint_blob(heatmap_id, blob_id, blob.pt, blob.size, heatmap[blob.pt[1]][blob.pt[0]])
         joint_blob = Struct_joint_blob(heatmap_id, blob_id, blob.pt, blob.size, heatmap[int(blob.pt[1])][int(blob.pt[0])])
         joint_blobs.append(joint_blob)
 
@@ -167,7 +170,7 @@ def find_joint_blobs_in_heatmap(heatmap, heatmap_id = 0):
     return joint_blobs
 
 
-def find_blobs_in_heatmap(heatmap, flag_show_blobs = False):
+def find_blobs_in_heatmap(heatmap, flag_show_blobs=False):
     heatmap = normalize_heatmap(heatmap)
     blobs = detect_blobs(heatmap)
     if flag_show_blobs is True:
@@ -198,7 +201,7 @@ def init_blob_detector():
     params.filterByCircularity = False
     params.filterByConvexity = False
     params.filterByInertia = False
-    #detector = cv2.SimpleBlobDetector(params)
+    # detector = cv2.SimpleBlobDetector(params)
     detector = cv2.SimpleBlobDetector_create(params)
     return detector
 
@@ -211,11 +214,11 @@ def convert_heatmap_float_to_uint8(heatmap):
 
 def show_blobs_in_heatmap(heatmap, blobs):
     heatmap_with_blobs = cv2.drawKeypoints(heatmap, blobs, np.array([]),
-                                           (0,0,255),
+                                           (0, 0, 255),
                                            cv2.DRAW_MATCHES_FLAGS_DRAW_RICH_KEYPOINTS)
 
-    [i,j] = np.unravel_index(heatmap.argmin(), heatmap.shape)
-    cv2.circle(heatmap_with_blobs, (j,i), 3, (0,255,0))
+    [i, j] = np.unravel_index(heatmap.argmin(), heatmap.shape)
+    cv2.circle(heatmap_with_blobs, (j, i), 3, (0, 255, 0))
     cv2.imshow("Heatmap Blobs", heatmap_with_blobs)
     cv2.waitKey(0)
 
@@ -224,4 +227,4 @@ def dist(pt1, pt2):
     [x0, y0] = pt1
     [x1, y1] = pt2
 
-    return np.sqrt((x0-x1)**2 + (y0-y1)**2)
+    return np.sqrt((x0 - x1) ** 2 + (y0 - y1) ** 2)

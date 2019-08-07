@@ -1,19 +1,15 @@
 # largely borrowed from https://github.com/eriklindernoren/PyTorch-YOLOv3/blob/a68d786f6c9cb65d944c2f48eb7d219c914de11f/detect.py
 from __future__ import division
 
-from detector.models import *
-from detector.detector_utils import *
-
 import os
-os.environ['CUDA_VISIBLE_DEVICES']='0'
-import sys
-import time
-import datetime
+
+from detector.detector_utils import *
+from detector.models import *
+
+os.environ['CUDA_VISIBLE_DEVICES'] = '0'
 import argparse
 
 import torch
-from torch.utils.data import DataLoader
-from torchvision import datasets
 from torch.autograd import Variable
 
 parser = argparse.ArgumentParser()
@@ -44,7 +40,6 @@ if cuda:
     model.cuda()
 
 model.eval()  # Set in evaluation mode
-
 
 Tensor = torch.cuda.FloatTensor if cuda else torch.FloatTensor
 

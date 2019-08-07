@@ -1,10 +1,9 @@
 import cv2
 
-
 joint_pairs = [[0, 1], [1, 3], [0, 2], [2, 4],
-                [5, 6], [5, 7], [7, 9], [6, 8], [8, 10],
-                [5, 11], [6, 12], [11, 12],
-                [11, 13], [12, 14], [13, 15], [14, 16]]
+               [5, 6], [5, 7], [7, 9], [6, 8], [8, 10],
+               [5, 11], [6, 12], [11, 12],
+               [11, 13], [12, 14], [13, 15], [14, 16]]
 
 colors = [[255, 0, 0], [255, 85, 0], [255, 170, 0], [255, 255, 0], [170, 255, 0], [85, 255, 0], [0, 255, 0], \
           [0, 255, 85], [0, 255, 170], [0, 255, 255], [0, 170, 255], [0, 85, 255], [0, 0, 255], [85, 0, 255], \
@@ -12,10 +11,9 @@ colors = [[255, 0, 0], [255, 85, 0], [255, 170, 0], [255, 255, 0], [170, 255, 0]
 
 
 def plot_keypoint(image, keypoints, keypoint_thresh=0.1):
-    confidence = keypoints[:,:,2:]
-    coordinates = keypoints[:,:,:2]
+    confidence = keypoints[:, :, 2:]
+    coordinates = keypoints[:, :, :2]
     joint_visible = confidence[:, :, 0] > keypoint_thresh
-
 
     # 描点
     for people in keypoints:
@@ -31,7 +29,8 @@ def plot_keypoint(image, keypoints, keypoint_thresh=0.1):
         pts = coordinates[i]
         for color_i, jp in zip(colors, joint_pairs):
             if joint_visible[i, jp[0]] and joint_visible[i, jp[1]]:
-                pt0 = pts[jp, 0];pt1 = pts[jp, 1]
+                pt0 = pts[jp, 0];
+                pt1 = pts[jp, 1]
                 pt0_0, pt0_1, pt1_0, pt1_1 = int(pt0[0]), int(pt0[1]), int(pt1[0]), int(pt1[1])
                 cv2.line(image, (pt0_0, pt1_0), (pt0_1, pt1_1), color_i, 2)
     return image
@@ -43,7 +42,7 @@ def convert(op_kpts):
     0-16 map to 0,16,15,18,17,5,2,6,3,7,4,12,9,13,10,14,11
     '''
     coco_kpts = []
-    for i, j in enumerate([0,16,15,18,17,5,2,6,3,7,4,12,9,13,10,14,11]):
+    for i, j in enumerate([0, 16, 15, 18, 17, 5, 2, 6, 3, 7, 4, 12, 9, 13, 10, 14, 11]):
         score = op_kpts[j][-1]
         # if eye, ear keypoints score is lower, map it to mouth
         if score < 0.2 and j in [15, 16, 17, 18]:
@@ -58,8 +57,8 @@ def convert(op_kpts):
 def convert_18(op_kpts):
     coco_kpts = []
     for i, j in enumerate(range(0, 18)):
-        if i<8:
+        if i < 8:
             coco_kpts.append(op_kpts[j])
         else:
-            coco_kpts.append(op_kpts[j+1])
+            coco_kpts.append(op_kpts[j + 1])
     return coco_kpts

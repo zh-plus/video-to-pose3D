@@ -12,13 +12,15 @@
     M: # of instances within a frame (which is # of human candidates)
     V: # of graph nodes (which is 15)
 '''
-import numpy as np
 
-import sys, os
+import os
+import sys
+
 sys.path.append(os.path.abspath("../../"))
 
 from utils_json import *
 from utils_io_folder import *
+
 
 def load_data_for_gcn(dataset_str, dataset_split_str):
     if dataset_str == "posetrack_18":
@@ -65,7 +67,7 @@ def load_graph_pairs_from_json(json_file_path):
             candidate_dict = {"track_id": track_id,
                               "img_id": image_id,
                               "bbox": bbox,
-                              "keypoints":keypoints}
+                              "keypoints": keypoints}
             track_id_dict[track_id].append(candidate_dict)
 
     graph_pair_list_all = []
@@ -127,18 +129,18 @@ def validate_bbox(bbox):
 
 def keypoints_to_graph(keypoints, bbox):
     num_elements = len(keypoints)
-    num_keypoints = num_elements/3
-    assert(num_keypoints == 15)
+    num_keypoints = num_elements / 3
+    assert (num_keypoints == 15)
 
     x0, y0, w, h = bbox
     flag_pass_check = True
 
-    graph = 15*[(0, 0)]
+    graph = 15 * [(0, 0)]
     for id in range(15):
         # normalize the corrdinates: mean 0, standard deviation 1
-        x = keypoints[3*id] - x0
-        y = keypoints[3*id+1] - y0
+        x = keypoints[3 * id] - x0
+        y = keypoints[3 * id + 1] - y0
 
-        score = keypoints[3*id+2]
+        score = keypoints[3 * id + 2]
         graph[id] = (int(x), int(y))
     return graph, flag_pass_check

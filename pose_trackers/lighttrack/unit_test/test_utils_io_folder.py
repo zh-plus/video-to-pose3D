@@ -4,9 +4,14 @@
     Dec, 2016
 '''
 
-import sys, os, io, shutil
+import io
+import os
+import shutil
+import sys
+
 sys.path.append(os.path.abspath("../utils/"))
 from utils_io_folder import *
+
 
 def test_create_folder():
     folder_path = "../temp_folder/"
@@ -57,7 +62,7 @@ def test_get_immediate_subfolder_names():
 def test_get_immediate_childfile_paths():
     temp_folder = '../temp_folder'
     create_dummy_files_in_folder(temp_folder)
-    childfile_paths = [ os.path.join(temp_folder, (str(ct)+ '.txt')) for ct in range(10)]
+    childfile_paths = [os.path.join(temp_folder, (str(ct) + '.txt')) for ct in range(10)]
 
     childfile_paths_derived = get_immediate_childfile_paths(temp_folder)
     shutil.rmtree(temp_folder)
@@ -71,7 +76,7 @@ def test_get_immediate_childfile_paths():
 def test_get_immediate_childfile_names():
     temp_folder = '../temp_folder'
     create_dummy_files_in_folder(temp_folder)
-    childfile_names = [(str(ct)+ '.txt') for ct in range(10)]
+    childfile_names = [(str(ct) + '.txt') for ct in range(10)]
 
     childfile_names_derived = get_immediate_childfile_names(temp_folder)
     shutil.rmtree(temp_folder)
@@ -82,7 +87,7 @@ def test_get_immediate_childfile_names():
         return True
 
 
-def create_dummy_files_in_folder(temp_folder, file_format = 'txt'):
+def create_dummy_files_in_folder(temp_folder, file_format='txt'):
     create_folder(temp_folder)
     for ct in range(10):
         file_name = str(ct) + '.' + file_format

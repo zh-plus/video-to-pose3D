@@ -8,15 +8,15 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-import os
 import logging
+import os
 import time
 from collections import namedtuple
 from pathlib import Path
 
 import torch
-import torch.optim as optim
 import torch.nn as nn
+import torch.optim as optim
 
 
 def create_logger(cfg, cfg_name, phase='train'):
@@ -49,7 +49,7 @@ def create_logger(cfg, cfg_name, phase='train'):
     logging.getLogger('').addHandler(console)
 
     tensorboard_log_dir = Path(cfg.LOG_DIR) / dataset / model / \
-        (cfg_name + '_' + time_str)
+                          (cfg_name + '_' + time_str)
 
     print('=> creating {}'.format(tensorboard_log_dir))
     tensorboard_log_dir.mkdir(parents=True, exist_ok=True)
@@ -116,17 +116,17 @@ def get_model_summary(model, *input_tensors, item_length=26, verbose=False):
             params = 0
 
             if class_name.find("Conv") != -1 or class_name.find("BatchNorm") != -1 or \
-               class_name.find("Linear") != -1:
+                    class_name.find("Linear") != -1:
                 for param_ in module.parameters():
                     params += param_.view(-1).size(0)
 
             flops = "Not Available"
             if class_name.find("Conv") != -1 and hasattr(module, "weight"):
                 flops = (
-                    torch.prod(
-                        torch.LongTensor(list(module.weight.data.size()))) *
-                    torch.prod(
-                        torch.LongTensor(list(output.size())[2:]))).item()
+                        torch.prod(
+                            torch.LongTensor(list(module.weight.data.size()))) *
+                        torch.prod(
+                            torch.LongTensor(list(output.size())[2:]))).item()
             elif isinstance(module, nn.Linear):
                 flops = (torch.prod(torch.LongTensor(list(output.size()))) \
                          * input[0].size(1)).item()
@@ -146,8 +146,8 @@ def get_model_summary(model, *input_tensors, item_length=26, verbose=False):
             )
 
         if not isinstance(module, nn.ModuleList) \
-           and not isinstance(module, nn.Sequential) \
-           and module != model:
+                and not isinstance(module, nn.Sequential) \
+                and module != model:
             hooks.append(module.register_forward_hook(hook))
 
     model.apply(add_hooks)
@@ -161,14 +161,14 @@ def get_model_summary(model, *input_tensors, item_length=26, verbose=False):
     details = ''
     if verbose:
         details = "Model Summary" + \
-            os.linesep + \
-            "Name{}Input Size{}Output Size{}Parameters{}Multiply Adds (Flops){}".format(
-                ' ' * (space_len - len("Name")),
-                ' ' * (space_len - len("Input Size")),
-                ' ' * (space_len - len("Output Size")),
-                ' ' * (space_len - len("Parameters")),
-                ' ' * (space_len - len("Multiply Adds (Flops)"))) \
-                + os.linesep + '-' * space_len * 5 + os.linesep
+                  os.linesep + \
+                  "Name{}Input Size{}Output Size{}Parameters{}Multiply Adds (Flops){}".format(
+                      ' ' * (space_len - len("Name")),
+                      ' ' * (space_len - len("Input Size")),
+                      ' ' * (space_len - len("Output Size")),
+                      ' ' * (space_len - len("Parameters")),
+                      ' ' * (space_len - len("Multiply Adds (Flops)"))) \
+                  + os.linesep + '-' * space_len * 5 + os.linesep
 
     params_sum = 0
     flops_sum = 0
@@ -188,13 +188,13 @@ def get_model_summary(model, *input_tensors, item_length=26, verbose=False):
                 ' ' * (space_len - len(str(layer.num_parameters))),
                 layer.multiply_adds,
                 ' ' * (space_len - len(str(layer.multiply_adds)))) \
-                + os.linesep + '-' * space_len * 5 + os.linesep
+                       + os.linesep + '-' * space_len * 5 + os.linesep
 
     details += os.linesep \
-        + "Total Parameters: {:,}".format(params_sum) \
-        + os.linesep + '-' * space_len * 5 + os.linesep
-    details += "Total Multiply Adds (For Convolution and Linear Layers only): {:,} GFLOPs".format(flops_sum/(1024**3)) \
-        + os.linesep + '-' * space_len * 5 + os.linesep
+               + "Total Parameters: {:,}".format(params_sum) \
+               + os.linesep + '-' * space_len * 5 + os.linesep
+    details += "Total Multiply Adds (For Convolution and Linear Layers only): {:,} GFLOPs".format(flops_sum / (1024 ** 3)) \
+               + os.linesep + '-' * space_len * 5 + os.linesep
     details += "Number of Layers" + os.linesep
     for layer in layer_instances:
         details += "{} : {} layers   ".format(layer, layer_instances[layer])

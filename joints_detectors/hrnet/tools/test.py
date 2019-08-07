@@ -8,7 +8,10 @@
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
-import ipdb;pdb=ipdb.set_trace
+
+import ipdb;
+
+pdb = ipdb.set_trace
 
 import argparse
 import os
@@ -22,16 +25,15 @@ import torch.utils.data
 import torch.utils.data.distributed
 import torchvision.transforms as transforms
 
-import _init_paths
 from config import cfg
 from config import update_config
 from core.loss import JointsMSELoss
 from core.function import validate
 from utils.utils import create_logger
 
-import dataset
-import models
-import ipdb;pdb=ipdb.set_trace
+import ipdb;
+
+pdb = ipdb.set_trace
 
 
 def parse_args():
@@ -73,7 +75,7 @@ def copy_prev_models(prev_models_dir, model_dir):
     import shutil
 
     vc_folder = '/hdfs/' \
-        + '/' + os.environ['PHILLY_VC']
+                + '/' + os.environ['PHILLY_VC']
     source = prev_models_dir
     # If path is set as "sys/jobs/application_1533861538020_2366/models" prefix with the location of vc folder
     source = vc_folder + '/' + source if not source.startswith(vc_folder) \
@@ -111,13 +113,13 @@ def main():
     torch.backends.cudnn.deterministic = cfg.CUDNN.DETERMINISTIC
     torch.backends.cudnn.enabled = cfg.CUDNN.ENABLED
 
-    model = eval('models.'+cfg.MODEL.NAME+'.get_pose_net')(
+    model = eval('models.' + cfg.MODEL.NAME + '.get_pose_net')(
         cfg, is_train=False
     )
 
     if not cfg.TEST.MODEL_FILE:
         logger.info('=> loading model from {}'.format(cfg.TEST.MODEL_FILE))
-        model_file_name  = 'models/pytorch/pose_coco/pose_hrnet_w32_256x192.pth' 
+        model_file_name = 'models/pytorch/pose_coco/pose_hrnet_w32_256x192.pth'
         model.load_state_dict(torch.load(model_file_name), strict=False)
     else:
         model_state_file = os.path.join(
@@ -137,7 +139,7 @@ def main():
     normalize = transforms.Normalize(
         mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]
     )
-    valid_dataset = eval('dataset.'+cfg.DATASET.DATASET)(
+    valid_dataset = eval('dataset.' + cfg.DATASET.DATASET)(
         cfg, cfg.DATASET.ROOT, cfg.DATASET.TEST_SET, False,
         transforms.Compose([
             transforms.ToTensor(),
@@ -146,7 +148,7 @@ def main():
     )
     valid_loader = torch.utils.data.DataLoader(
         valid_dataset,
-        batch_size=cfg.TEST.BATCH_SIZE_PER_GPU*len(cfg.GPUS),
+        batch_size=cfg.TEST.BATCH_SIZE_PER_GPU * len(cfg.GPUS),
         shuffle=False,
         num_workers=cfg.WORKERS,
         pin_memory=True

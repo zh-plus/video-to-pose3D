@@ -10,14 +10,13 @@ from __future__ import print_function
 
 import logging
 import os
-import json_tricks as json
 from collections import OrderedDict
 
+import json_tricks as json
 import numpy as np
 from scipy.io import loadmat, savemat
 
 from lib.dataset.JointsDataset import JointsDataset
-
 
 logger = logging.getLogger(__name__)
 
@@ -43,7 +42,7 @@ class MPIIDataset(JointsDataset):
     def _get_db(self):
         # create train/val split
         file_name = os.path.join(
-            self.root, 'annot', self.image_set+'.json'
+            self.root, 'annot', self.image_set + '.json'
         )
         with open(file_name) as anno_file:
             anno = json.load(anno_file)
@@ -65,7 +64,7 @@ class MPIIDataset(JointsDataset):
             c = c - 1
 
             joints_3d = np.zeros((self.num_joints, 3), dtype=np.float)
-            joints_3d_vis = np.zeros((self.num_joints,  3), dtype=np.float)
+            joints_3d_vis = np.zeros((self.num_joints, 3), dtype=np.float)
             if self.image_set != 'test':
                 joints = np.array(a['joints'])
                 joints[:, 0:2] = joints[:, 0:2] - 1
@@ -145,17 +144,17 @@ class MPIIDataset(JointsDataset):
         jnt_count = np.sum(jnt_visible, axis=1)
         less_than_threshold = np.multiply((scaled_uv_err <= threshold),
                                           jnt_visible)
-        PCKh = np.divide(100.*np.sum(less_than_threshold, axis=1), jnt_count)
+        PCKh = np.divide(100. * np.sum(less_than_threshold, axis=1), jnt_count)
 
         # save
-        rng = np.arange(0, 0.5+0.01, 0.01)
+        rng = np.arange(0, 0.5 + 0.01, 0.01)
         pckAll = np.zeros((len(rng), 16))
 
         for r in range(len(rng)):
             threshold = rng[r]
             less_than_threshold = np.multiply(scaled_uv_err <= threshold,
                                               jnt_visible)
-            pckAll[r, :] = np.divide(100.*np.sum(less_than_threshold, axis=1),
+            pckAll[r, :] = np.divide(100. * np.sum(less_than_threshold, axis=1),
                                      jnt_count)
 
         PCKh = np.ma.array(PCKh, mask=False)

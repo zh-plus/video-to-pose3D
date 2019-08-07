@@ -10,7 +10,6 @@ from __future__ import print_function
 
 from yacs.config import CfgNode as CN
 
-
 # pose_resnet related params
 POSE_RESNET = CN()
 POSE_RESNET.NUM_LAYERS = 50
@@ -50,7 +49,6 @@ POSE_HIGH_RESOLUTION_NET.STAGE4.NUM_BLOCKS = [4, 4, 4, 4]
 POSE_HIGH_RESOLUTION_NET.STAGE4.NUM_CHANNELS = [32, 64, 128, 256]
 POSE_HIGH_RESOLUTION_NET.STAGE4.BLOCK = 'BASIC'
 POSE_HIGH_RESOLUTION_NET.STAGE4.FUSE_METHOD = 'SUM'
-
 
 MODEL_EXTRAS = {
     'pose_resnet': POSE_RESNET,

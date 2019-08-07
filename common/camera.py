@@ -8,36 +8,40 @@
 import numpy as np
 import torch
 
-from common.utils import wrap
 from common.quaternion import qrot, qinverse
+from common.utils import wrap
+
 
 def normalize_screen_coordinates(X, w, h):
     assert X.shape[-1] == 2
 
     # Normalize so that [0, w] is mapped to [-1, 1], while preserving the aspect ratio
-    return X/w*2 - [1, h/w]
+    return X / w * 2 - [1, h / w]
+
 
 def normalize_screen_coordinates_new(X, w, h):
     assert X.shape[-1] == 2
 
-    return (X -(w/2, h/2) ) / (w/2, h/2)
+    return (X - (w / 2, h / 2)) / (w / 2, h / 2)
+
 
 def image_coordinates_new(X, w, h):
     assert X.shape[-1] == 2
 
     # Reverse camera frame normalization
-    return (X * (w/2, h/2)) + (w/2, h/2)
+    return (X * (w / 2, h / 2)) + (w / 2, h / 2)
+
 
 def image_coordinates(X, w, h):
     assert X.shape[-1] == 2
 
     # Reverse camera frame normalization
-    return (X + [1, h/w]) * w/2
+    return (X + [1, h / w]) * w / 2
 
 
 def world_to_camera(X, R, t):
-    Rt = wrap(qinverse, R) # Invert rotation
-    return wrap(qrot, np.tile(Rt, (*X.shape[:-1], 1)), X - t) # Rotate and translate
+    Rt = wrap(qinverse, R)  # Invert rotation
+    return wrap(qrot, np.tile(Rt, (*X.shape[:-1], 1)), X - t)  # Rotate and translate
 
 
 def camera_to_world(X, R, t):
@@ -62,20 +66,21 @@ def project_to_2d(X, camera_params):
     while len(camera_params.shape) < len(X.shape):
         camera_params = camera_params.unsqueeze(1)
 
-    f = camera_params[..., :2] #focal lendgth
-    c = camera_params[..., 2:4] # center principal point
+    f = camera_params[..., :2]  # focal lendgth
+    c = camera_params[..., 2:4]  # center principal point
     k = camera_params[..., 4:7]
     p = camera_params[..., 7:]
 
     XX = torch.clamp(X[..., :2] / X[..., 2:], min=-1, max=1)
-    r2 = torch.sum(XX[..., :2]**2, dim=len(XX.shape)-1, keepdim=True)
+    r2 = torch.sum(XX[..., :2] ** 2, dim=len(XX.shape) - 1, keepdim=True)
 
-    radial = 1 + torch.sum(k * torch.cat((r2, r2**2, r2**3), dim=len(r2.shape)-1), dim=len(r2.shape)-1, keepdim=True)
-    tan = torch.sum(p*XX, dim=len(XX.shape)-1, keepdim=True)
+    radial = 1 + torch.sum(k * torch.cat((r2, r2 ** 2, r2 ** 3), dim=len(r2.shape) - 1), dim=len(r2.shape) - 1, keepdim=True)
+    tan = torch.sum(p * XX, dim=len(XX.shape) - 1, keepdim=True)
 
-    XXX = XX*(radial + tan) + p*r2
+    XXX = XX * (radial + tan) + p * r2
 
-    return f*XXX + c
+    return f * XXX + c
+
 
 def project_to_2d_linear(X, camera_params):
     """
@@ -99,4 +104,4 @@ def project_to_2d_linear(X, camera_params):
 
     XX = torch.clamp(X[..., :2] / X[..., 2:], min=-1, max=1)
 
-    return f*XX + c
+    return f * XX + c

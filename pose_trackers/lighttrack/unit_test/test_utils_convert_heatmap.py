@@ -4,17 +4,19 @@
     Dec, 2016
 '''
 
-import sys, os
+import os
+import sys
+
 sys.path.append(os.path.abspath("../utils/"))
 from utils_convert_heatmap import *
 import numpy as np
-import cv2
+
 
 def test_rebin():
     np_array = np.arange(36).reshape([6, 6])
     print(np_array)
 
-    cropped = rebin(np_array, (2,3))
+    cropped = rebin(np_array, (2, 3))
     print(cropped)
 
 

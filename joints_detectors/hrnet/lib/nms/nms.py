@@ -17,18 +17,21 @@ from .gpu_nms import gpu_nms
 def py_nms_wrapper(thresh):
     def _nms(dets):
         return nms(dets, thresh)
+
     return _nms
 
 
 def cpu_nms_wrapper(thresh):
     def _nms(dets):
         return cpu_nms(dets, thresh)
+
     return _nms
 
 
 def gpu_nms_wrapper(thresh, device_id):
     def _nms(dets):
         return gpu_nms(dets, thresh, device_id)
+
     return _nms
 
 
@@ -130,7 +133,7 @@ def rescore(overlap, scores, thresh, type='gaussian'):
         inds = np.where(overlap >= thresh)[0]
         scores[inds] = scores[inds] * (1 - overlap[inds])
     else:
-        scores = scores * np.exp(- overlap**2 / thresh)
+        scores = scores * np.exp(- overlap ** 2 / thresh)
 
     return scores
 

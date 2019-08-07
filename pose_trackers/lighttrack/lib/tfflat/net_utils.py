@@ -1,5 +1,5 @@
 import tensorflow as tf
-from collections import namedtuple
+
 
 def average_gradients(tower_grads):
     """Calculate the average gradient for each shared variable across all towers.
@@ -38,6 +38,7 @@ def average_gradients(tower_grads):
         grad_and_var = (grad, v)
         average_grads.append(grad_and_var)
     return average_grads
+
 
 def sum_gradients(tower_grads):
     """Calculate the average gradient for each shared variable across all towers.
@@ -78,17 +79,19 @@ def sum_gradients(tower_grads):
         sum_grads.append(grad_and_var)
     return sum_grads
 
+
 def aggregate_batch(data_holder):
     results = []
     if len(data_holder) == 1:
         results = data_holder if isinstance(data_holder[0], tf.Tensor) else data_holder[0]
     elif isinstance(data_holder[0], tf.Tensor):
-        results.append( tf.concat(data_holder, axis=0) )
+        results.append(tf.concat(data_holder, axis=0))
     else:
         for i in range(len(data_holder[0])):
             results.append(
                 tf.concat([data_holder[j][i] for j in range(len(data_holder))], axis=0))
     return results
+
 
 def get_optimizer(lr, optimizer='momentum'):
     if optimizer == 'sgd':
@@ -100,6 +103,7 @@ def get_optimizer(lr, optimizer='momentum'):
     else:
         raise ValueError('invalid optimizer')
     return optimizer
+
 
 def get_tower_summary_dict(summary):
     ret = dict()

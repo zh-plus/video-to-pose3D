@@ -4,11 +4,14 @@
     Dec, 2016
 '''
 
-import sys, os
+import os
+import sys
+
 sys.path.append(os.path.abspath("../utils/"))
 
 import numpy as np
 from utils_nms import *
+
 
 def test_find_joint_blobs_in_heatmap():
     heatmaps = np.load('../dataset_custom/heatmap_sample.npy')
@@ -40,7 +43,7 @@ def test_find_joint_blob_list_in_heatmaps():
         max_joint_blob = joint_blob_list[0]
         joint_blob_list = remove_blobs_from_same_heatmap(max_joint_blob, joint_blob_list)
         joint_blob_list = remove_blobs_within_range(max_joint_blob, joint_blob_list)
-        #print_joint_blob_list_nicely(joint_blob_list)
+        # print_joint_blob_list_nicely(joint_blob_list)
 
     if joint_blob_list is not None:
         return True

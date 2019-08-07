@@ -4,11 +4,11 @@
     August 7th, 2018
     Calculate the BGR mean values for PoseTrack 2018 dataset
 '''
-from utils_io_folder import *
-from utils_io_file import *
-from utils_json import *
 import cv2
 import numpy as np
+from utils_io_file import *
+from utils_io_folder import *
+from utils_json import *
 
 width = 288
 ht = 384
@@ -21,7 +21,7 @@ def get_mean_from_whole_img():
     B_sum = G_sum = R_sum = 0
     img_ct = 0
     for subfolder_path in subfolder_paths:
-        img_paths = get_immediate_childfile_paths(subfolder_path, ext= "jpg")
+        img_paths = get_immediate_childfile_paths(subfolder_path, ext="jpg")
         img_ct += len(img_paths)
         for img_path in img_paths:
             img = cv2.imread(img_path)
@@ -38,7 +38,7 @@ def get_mean_from_whole_img():
 
 def get_mean_from_human_patches():
     gt_path = "posetrack_merged_train_18.json"
-    #gt_path = "posetrack_merged_val_18.json"
+    # gt_path = "posetrack_merged_val_18.json"
     gt_python_data = read_json_from_file(gt_path)
     anns = gt_python_data["annotations"]
     images_info = gt_python_data["images"]
@@ -63,7 +63,7 @@ def get_mean_from_human_patches():
         # (2) imgpath
         image_id = ann["image_id"]
         index_list = find(images_info, key="frame_id", value=image_id)
-        assert(len(index_list) > 0)
+        assert (len(index_list) > 0)
         imgname = images_info[index_list[0]]["file_name"]
         prefix = '../data/Data_2018/posetrack_data/'
         imgpath = os.path.join(prefix, imgname)
@@ -73,8 +73,8 @@ def get_mean_from_human_patches():
         x2 = int(x1 + bbox[2])
         y1 = int(bbox[1])
         y2 = int(y1 + bbox[3])
-        if x1< 0: x1=0
-        if y1< 0: y1=0
+        if x1 < 0: x1 = 0
+        if y1 < 0: y1 = 0
         if x2 <= 0 or y2 <= 0 or x2 <= x1 or y2 <= y1:
             img_ct -= 1
             continue
@@ -134,7 +134,7 @@ def get_bbox_from_keypoints(keypoints_python_data):
 
 
 def enlarge_bbox(bbox, scale):
-    assert(scale > 0)
+    assert (scale > 0)
     min_x, min_y, max_x, max_y = bbox
     margin_x = int(0.5 * scale * (max_x - min_x))
     margin_y = int(0.5 * scale * (max_y - min_y))
@@ -149,10 +149,10 @@ def enlarge_bbox(bbox, scale):
     width = max_x - min_x
     height = max_y - min_y
     if max_y < 0 or max_x < 0 or width <= 0 or height <= 0 or width > 2000 or height > 2000:
-        min_x=0
-        max_x=2
-        min_y=0
-        max_y=2
+        min_x = 0
+        max_x = 2
+        min_y = 0
+        max_y = 2
 
     bbox_enlarged = [min_x, min_y, max_x, max_y]
     return bbox_enlarged

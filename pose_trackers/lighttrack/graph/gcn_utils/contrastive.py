@@ -29,9 +29,9 @@ class ContrastiveLoss(torch.nn.Module):
         assert x0_type.size() == x1_type.shape
         assert x1_type.size()[0] == y_type.shape[0]
         assert x1_type.size()[0] > 0
-        assert x0_type.dim() == 2    # last layer graph feature dimension: (batch_size, feature_size)
+        assert x0_type.dim() == 2  # last layer graph feature dimension: (batch_size, feature_size)
         assert x1_type.dim() == 2
-        assert y_type.dim() == 1    # label: 0->not matching;   1->matching
+        assert y_type.dim() == 1  # label: 0->not matching;   1->matching
 
     def forward(self, x0, x1, y):
         self.check_type_forward((x0, x1, y))
@@ -47,10 +47,12 @@ class ContrastiveLoss(torch.nn.Module):
         loss = torch.sum(loss) / 2.0
         return loss
 
+
 '''
 # The following comes from:
 # https://github.com/adambielski/siamese-triplet/blob/master/losses.py
 '''
+
 
 class TripletLoss(nn.Module):
     """
@@ -109,7 +111,6 @@ class OnlineTripletLoss(nn.Module):
         self.triplet_selector = triplet_selector
 
     def forward(self, embeddings, target):
-
         triplets = self.triplet_selector.get_triplets(embeddings, target)
 
         if embeddings.is_cuda:

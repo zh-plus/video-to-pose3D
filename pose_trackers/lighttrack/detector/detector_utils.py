@@ -1,14 +1,14 @@
 # Source: https://github.com/eriklindernoren/PyTorch-YOLOv3/blob/a68d786f6c9cb65d944c2f48eb7d219c914de11f/utils/utils.py
 
 from __future__ import division
+
 import math
-import time
+
+import cv2
+import numpy as np
 import torch
 import torch.nn as nn
-import torch.nn.functional as F
-from torch.autograd import Variable
-import numpy as np
-import cv2
+
 
 def preprocess_img_for_yolo(img, img_size=416):
     input_img, _ = pad_to_square(img, 127.5)
@@ -293,7 +293,7 @@ def non_max_suppression(prediction, conf_thres=0.5, nms_thres=0.4):
 
 
 def build_targets(
-    pred_boxes, pred_conf, pred_cls, target, anchors, num_anchors, num_classes, grid_size, ignore_thres, img_dim
+        pred_boxes, pred_conf, pred_cls, target, anchors, num_anchors, num_classes, grid_size, ignore_thres, img_dim
 ):
     nB = target.size(0)
     nA = num_anchors

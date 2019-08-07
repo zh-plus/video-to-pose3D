@@ -6,28 +6,20 @@
     Processor for Siamese Graph Convolutional Networks for Pose Tracking
 '''
 
-#!/usr/bin/env python
+# !/usr/bin/env python
 # pylint: disable=W0201
-import sys
 import argparse
-import yaml
-import numpy as np
 
+import numpy as np
 # torch
 import torch
-import torch.nn as nn
 import torch.optim as optim
-
-# torchlight
-import torchlight
-from torchlight import str2bool
-from torchlight import DictAction
-from torchlight import import_class
-
-from gcn_utils.processor_base import Processor
-
 # import contrastive loss
 from gcn_utils.contrastive import ContrastiveLoss
+from gcn_utils.processor_base import Processor
+# torchlight
+from torchlight import str2bool
+
 
 def weights_init(m):
     classname = m.__class__.__name__
@@ -42,6 +34,7 @@ def weights_init(m):
     elif classname.find('BatchNorm') != -1:
         m.weight.data.normal_(1.0, 0.02)
         m.bias.data.fill_(0)
+
 
 class SGCN_Processor(Processor):
     """
@@ -73,7 +66,7 @@ class SGCN_Processor(Processor):
     def adjust_lr(self):
         if self.arg.optimizer == 'SGD' and self.arg.step:
             lr = self.arg.base_lr * (
-                0.1**np.sum(self.meta_info['epoch']>= np.array(self.arg.step)))
+                    0.1 ** np.sum(self.meta_info['epoch'] >= np.array(self.arg.step)))
             for param_group in self.optimizer.param_groups:
                 param_group['lr'] = lr
             self.lr = lr
@@ -93,7 +86,6 @@ class SGCN_Processor(Processor):
         loss_value = []
 
         for data_1, data_2, label in loader:
-
             # get data
             data_1 = data_1.float().to(self.dev)
             data_2 = data_2.float().to(self.dev)
@@ -115,7 +107,7 @@ class SGCN_Processor(Processor):
             self.show_iter_info()
             self.meta_info['iter'] += 1
 
-        self.epoch_info['mean_loss']= np.mean(loss_value)
+        self.epoch_info['mean_loss'] = np.mean(loss_value)
         self.show_epoch_info()
         self.io.print_timer()
 
@@ -164,17 +156,16 @@ class SGCN_Processor(Processor):
         self.result = np.concatenate(result_frag)
         if evaluation:
             self.label = np.concatenate(label_frag)
-            self.epoch_info['mean_loss']= np.mean(loss_value)
+            self.epoch_info['mean_loss'] = np.mean(loss_value)
             self.show_epoch_info()
 
-            #print(result_frag)
-            #print(label_frag[0:20])
-            #print(pred_label_frag[0:20])
+            # print(result_frag)
+            # print(label_frag[0:20])
+            # print(pred_label_frag[0:20])
 
             # show accuracy
             accuracy = calculate_accuracy(label_frag, pred_label_frag)
             print("accuracy: {}".format(accuracy))
-
 
     @staticmethod
     def get_parser(add_help=False):
@@ -203,7 +194,7 @@ class SGCN_Processor(Processor):
 def calculate_accuracy(label_list, pred_list):
     len_pred = len(pred_list)
     len_label = len(label_list)
-    assert(len_pred == len_label)
+    assert (len_pred == len_label)
 
     num_true = 0
     for id in range(len_pred):

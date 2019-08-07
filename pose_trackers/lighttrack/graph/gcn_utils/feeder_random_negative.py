@@ -7,21 +7,17 @@
     Code partially borrowed from:
     https://github.com/yysijie/st-gcn/blob/master/feeder/feeder.py
 '''
-# sys
-import os
-import sys
-import numpy as np
-import random
 import pickle
-import json
+import random
+
+# sys
+import numpy as np
 # torch
 import torch
-import torch.nn as nn
-from torchvision import datasets, transforms
 
 # operation
 from . import tools
-import random
+
 
 class Feeder(torch.utils.data.Dataset):
     """ Feeder of PoseTrack Dataset
@@ -34,7 +30,7 @@ class Feeder(torch.utils.data.Dataset):
 
     def __init__(self,
                  data_path,
-                 #label_path,
+                 # label_path,
                  ignore_empty_sample=True,
                  debug=False):
         self.debug = debug
@@ -48,11 +44,11 @@ class Feeder(torch.utils.data.Dataset):
             self.graph_pair_list_all = pickle.load(handle)
 
         # output data shape (N, C, T, V, M)
-        self.N = len(self.graph_pair_list_all)  #sample
-        self.C = 2  #channel
-        self.T = 1  #frame
-        self.V = 15  #joint
-        self.M = 1  #person
+        self.N = len(self.graph_pair_list_all)  # sample
+        self.C = 2  # channel
+        self.T = 1  # frame
+        self.V = 15  # joint
+        self.M = 1  # person
 
     def __len__(self):
         return self.N
@@ -79,22 +75,20 @@ class Feeder(torch.utils.data.Dataset):
             # add label
             if siamese_id == 1:
                 # positive sample
-                label = 1 # a pair should match
+                label = 1  # a pair should match
 
                 # randomly add negative samples
                 if random.uniform(0, 1) > 0.5:
-                    #self.change_pose_graph(data_numpy_pair[0])
+                    # self.change_pose_graph(data_numpy_pair[0])
                     self.change_pose_graph_debug(data_numpy_pair[0])
-                    label = 0 # mis-match
+                    label = 0  # mis-match
 
         return data_numpy_pair[0], data_numpy_pair[1], label
-
 
     def change_pose_graph_debug(self, data_numpy):
         data_numpy[0, 0, :, 0] = 0
         data_numpy[1, 0, :, 0] = 0
         return
-
 
     def change_pose_graph(self, data_numpy):
         # change pose B so that pose A and pose B does not match
@@ -116,7 +110,6 @@ class Feeder(torch.utils.data.Dataset):
         data_numpy[0, 0, :, 0] = pose[:, 0]
         data_numpy[1, 0, :, 0] = pose[:, 1]
         return
-
 
     def top_k(self, score, top_k):
         assert (all(self.label >= 0))

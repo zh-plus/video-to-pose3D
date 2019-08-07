@@ -7,21 +7,15 @@
     Code partially borrowed from:
     https://github.com/yysijie/st-gcn/blob/master/feeder/feeder.py
 '''
-# sys
-import os
-import sys
-import numpy as np
-import random
 import pickle
-import json
+# operation
+import random
+
+# sys
+import numpy as np
 # torch
 import torch
-import torch.nn as nn
-from torchvision import datasets, transforms
 
-# operation
-from . import tools
-import random
 
 class Feeder(torch.utils.data.Dataset):
     """ Feeder of PoseTrack Dataset
@@ -48,16 +42,15 @@ class Feeder(torch.utils.data.Dataset):
         with open(self.data_path, 'rb') as handle:
             self.graph_pos_pair_list_all = pickle.load(handle)
 
-
         with open(self.neg_data_path, 'rb') as handle:
             self.graph_neg_pair_list_all = pickle.load(handle)
 
         # output data shape (N, C, T, V, M)
-        self.N = min(len(self.graph_pos_pair_list_all) , len(self.graph_neg_pair_list_all))  #sample
-        self.C = 2  #channel
-        self.T = 1  #frame
-        self.V = 15  #joint
-        self.M = 1  #person
+        self.N = min(len(self.graph_pos_pair_list_all), len(self.graph_neg_pair_list_all))  # sample
+        self.C = 2  # channel
+        self.T = 1  # frame
+        self.V = 15  # joint
+        self.M = 1  # person
 
     def __len__(self):
         return self.N
@@ -69,14 +62,14 @@ class Feeder(torch.utils.data.Dataset):
         # randomly add negative samples
         random_num = random.uniform(0, 1)
         if random_num > 0.5:
-        #if False:
+            # if False:
             # output shape (C, T, V, M)
             # get data
             sample_graph_pair = self.graph_pos_pair_list_all[index]
-            label = 1 # a pair should match
+            label = 1  # a pair should match
         else:
             sample_graph_pair = self.graph_neg_pair_list_all[index]
-            label = 0 # a pair does not match
+            label = 0  # a pair does not match
 
         data_numpy_pair = []
         for siamese_id in range(2):

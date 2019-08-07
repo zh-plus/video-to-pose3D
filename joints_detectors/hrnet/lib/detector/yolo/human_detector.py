@@ -1,27 +1,17 @@
 from __future__ import division
-import time
-import torch
-import torch.nn as nn
-from torch.autograd import Variable
-import numpy as np
-import cv2
 
 import os
 import sys
+import time
 
 # scipt dirctory
 yolo_dir = os.path.dirname(os.path.realpath(__file__))
 sys.path.insert(0, yolo_dir)
 
 from lib.detector.yolo.util import *
-import argparse
 import os.path as osp
 from lib.detector.yolo.darknet import Darknet
-from lib.detector.yolo.preprocess import prep_image, inp_to_image
-import pandas as pd
-import random
-import pickle as pkl
-import itertools
+from lib.detector.yolo.preprocess import prep_image
 
 # sys.path.pop(0)
 

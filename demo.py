@@ -1,8 +1,3 @@
-import os
-import cv2
-from tqdm import tqdm
-import numpy as np
-from argparse import ArgumentParser
 #
 # from joints_detectors.openpose.main import load_model as Model2Dload
 #

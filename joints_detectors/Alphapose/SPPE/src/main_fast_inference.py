@@ -1,17 +1,13 @@
+import os
+import sys
+
 import torch
 import torch.nn as nn
 import torch.utils.data
 import torch.utils.data.distributed
-import torch.nn.functional as F
-import numpy as np
-from SPPE.src.utils.img import flip_v, shuffleLR
-from SPPE.src.utils.eval import getPrediction
-from SPPE.src.models.FastPose import createModel
 
-import visdom
-import time
-import sys
-import os
+from SPPE.src.models.FastPose import createModel
+from SPPE.src.utils.img import flip_v, shuffleLR
 
 main_path = os.path.dirname(os.path.realpath(__file__))
 import torch._utils

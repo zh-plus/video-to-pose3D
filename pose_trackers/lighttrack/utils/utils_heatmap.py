@@ -5,24 +5,26 @@
     E-mail: gnxr9@mail.missouri.edu
     Nov 21th, 2018
 '''
-import numpy as np
 import math
-import cv2
-from keypoint_visualizer import *
 
+import cv2
+import numpy as np
+from keypoint_visualizer import *
 
 global blob_size
 blob_size = 20
-#blob_size = 10
+# blob_size = 10
 
 global heatmap_size
 heatmap_size = 56
-#heatmap_size = 28
+
+
+# heatmap_size = 28
 
 def generate_base_blob(sigma):
     height = width = blob_size
 
-    heatmap = np.zeros((height, width), dtype = np.float32)
+    heatmap = np.zeros((height, width), dtype=np.float32)
     start = 0
     x = height / 2.
     y = width / 2.
@@ -45,7 +47,7 @@ def test_generate_base_blob():
     sigma = 4.0
     heatmap_base_blob = generate_base_blob(sigma)
 
-    heatmap_visulize = (255*heatmap_base_blob).astype(int)
+    heatmap_visulize = (255 * heatmap_base_blob).astype(int)
     filename = "base_blob.png"
     cv2.imwrite(filename, heatmap_visulize)
     return
@@ -54,6 +56,7 @@ def test_generate_base_blob():
 def save_base_blob(base_blob):
     np.save("temp_base_blob", base_blob)
     return
+
 
 def load_base_blob():
     base_blob_path = "temp_base_blob.npy"
@@ -73,32 +76,32 @@ def generate_heatmaps_for_batch(keypoints_batch, base_blob):
         heatmaps_all: (num_candidates, num_channels, heatmap_size, heatmap_size)
     '''
     num_candidates = len(keypoints_batch)
-    #num_channels = len(keypoints_batch[0][0][0])
+    # num_channels = len(keypoints_batch[0][0][0])
     num_channels = len(keypoints_batch[0][0]) + 1
-    #print("num_candidates", num_candidates)
-    #print("num_channels", num_channels)
+    # print("num_candidates", num_candidates)
+    # print("num_channels", num_channels)
 
-    heatmaps_all = np.zeros((num_candidates, num_channels, heatmap_size, heatmap_size), dtype = np.float32)
+    heatmaps_all = np.zeros((num_candidates, num_channels, heatmap_size, heatmap_size), dtype=np.float32)
 
     for candidate_id in range(num_candidates):
         # heatmaps: (num_channels, heatmap_size, heatmap_size)
         heatmaps = heatmaps_all[candidate_id]
-        #print("Dimension of heatmaps: ", heatmaps.shape)
+        # print("Dimension of heatmaps: ", heatmaps.shape)
 
         for channel_id in range(num_channels):
             heatmap = heatmaps_all[candidate_id, channel_id, :, :]
-            #print("Dimension of heatmap: ", heatmap.shape)
+            # print("Dimension of heatmap: ", heatmap.shape)
 
-            #if True:
+            # if True:
             if channel_id != num_channels - 1:
-                #print(keypoints_batch)
+                # print(keypoints_batch)
                 keypoint = keypoints_batch[candidate_id, :, channel_id]
-                #print("Dimension of keypoint: ", keypoint.shape)
+                # print("Dimension of keypoint: ", keypoint.shape)
 
                 heatmap = generate_heatmap_for_channel(keypoint, heatmap, base_blob)
             else:
                 # generate heatmap for the background
-                heatmaps[(num_channels -1), :,:] = 1.0 - np.max(heatmaps[0:(num_channels-1), :,:], axis=0)
+                heatmaps[(num_channels - 1), :, :] = 1.0 - np.max(heatmaps[0:(num_channels - 1), :, :], axis=0)
     return heatmaps_all
 
 
@@ -161,7 +164,7 @@ def generate_heatmap_for_channel(keypoint, heatmap, base_blob):
             y_end = 0
             blob_y_st = 0
             blob_y_end = 0
-        #else:
+        # else:
         heatmap[y_st:y_end, x_st:x_end] = base_blob[blob_y_st:blob_y_end, blob_x_st:blob_x_end]
         return heatmap
 
@@ -173,25 +176,26 @@ def test_generate_heatmap_for_channel():
     loaded_base_blob = load_base_blob()
 
     keypoint = [56, 56, 2]
-    heatmap = np.zeros((56, 56), dtype = np.float32)
+    heatmap = np.zeros((56, 56), dtype=np.float32)
     heatmap = generate_heatmap_for_channel(keypoint, heatmap, loaded_base_blob)
 
-    heatmap_visulize = (255*heatmap).astype(int)
+    heatmap_visulize = (255 * heatmap).astype(int)
     filename = "test_generate_heatmap_for_channel.png"
     cv2.imwrite(filename, heatmap_visulize)
     return
 
 
 def test_generate_heatmaps_for_batch():
-    #sigma = 4.0
+    # sigma = 4.0
     sigma = 3.0
-    #sigma = 2.0
-    #sigma = 1.
+    # sigma = 2.0
+    # sigma = 1.
     base_blob = generate_base_blob(sigma)
     save_base_blob(base_blob)
     loaded_base_blob = load_base_blob()
 
-    keypoints_batch = np.array([[[0, 56, 10, 40, 25, 200, -200], [0, 56, 20, 20, 25, 200, -200], [2, 2, 1, 1, 2, 2, 2]]])  # (1, (x, y, vis)=3, channels=4)
+    keypoints_batch = np.array(
+        [[[0, 56, 10, 40, 25, 200, -200], [0, 56, 20, 20, 25, 200, -200], [2, 2, 1, 1, 2, 2, 2]]])  # (1, (x, y, vis)=3, channels=4)
     heatmaps_all = generate_heatmaps_for_batch(keypoints_batch, loaded_base_blob)
 
     num_candidates = len(heatmaps_all)
@@ -205,11 +209,10 @@ def test_generate_heatmaps_for_batch():
             heatmap = heatmaps[channel_id]
             print(heatmap)
 
-            heatmap_visulize = (255*heatmap).astype(int)
+            heatmap_visulize = (255 * heatmap).astype(int)
             filename = "test_{}_{}.png".format(str(candidate_id), str(channel_id))
             cv2.imwrite(filename, heatmap_visulize)
     return
-
 
 
 def generate_tilted_heatmaps_for_batch(keypoints_batch, sampled_fg_rois, base_blob):
@@ -225,34 +228,34 @@ def generate_tilted_heatmaps_for_batch(keypoints_batch, sampled_fg_rois, base_bl
         heatmaps_all: (num_candidates, num_channels, heatmap_size, heatmap_size)
     '''
     num_candidates = len(keypoints_batch)
-    #num_channels = len(keypoints_batch[0][0][0])
+    # num_channels = len(keypoints_batch[0][0][0])
     num_channels = len(keypoints_batch[0][0]) + 1
-    #print("num_candidates", num_candidates)
-    #print("num_channels", num_channels)
+    # print("num_candidates", num_candidates)
+    # print("num_channels", num_channels)
 
-    heatmaps_all = np.zeros((num_candidates, num_channels, heatmap_size, heatmap_size), dtype = np.float32)
+    heatmaps_all = np.zeros((num_candidates, num_channels, heatmap_size, heatmap_size), dtype=np.float32)
 
     for candidate_id in range(num_candidates):
         # heatmaps: (num_channels, heatmap_size, heatmap_size)
         heatmaps = heatmaps_all[candidate_id]
-        #print("Dimension of heatmaps: ", heatmaps.shape)
+        # print("Dimension of heatmaps: ", heatmaps.shape)
         roi = sampled_fg_rois[candidate_id]
         bbox_x1, bbox_y1, bbox_x2, bbox_y2 = roi
 
         for channel_id in range(num_channels):
             heatmap = heatmaps_all[candidate_id, channel_id, :, :]
-            #print("Dimension of heatmap: ", heatmap.shape)
+            # print("Dimension of heatmap: ", heatmap.shape)
 
-            #if True:
+            # if True:
             if channel_id != num_channels - 1:
-                #print(keypoints_batch)
+                # print(keypoints_batch)
                 keypoint = keypoints_batch[candidate_id, :, channel_id]
-                #print("Dimension of keypoint: ", keypoint.shape)
+                # print("Dimension of keypoint: ", keypoint.shape)
 
                 heatmap = generate_tilted_heatmap_for_channel(keypoint, roi, heatmap, base_blob)
             else:
                 # generate heatmap for the background
-                heatmaps[(num_channels -1), :,:] = 1.0 - np.max(heatmaps[0:(num_channels-1), :,:], axis=0)
+                heatmaps[(num_channels - 1), :, :] = 1.0 - np.max(heatmaps[0:(num_channels - 1), :, :], axis=0)
     return heatmaps_all
 
 
@@ -276,9 +279,9 @@ def generate_tilted_heatmap_for_channel(keypoint, roi, heatmap, base_blob):
 
     roi_wid = int(bbox_x2 - bbox_x1)
     roi_ht = int(bbox_y2 - bbox_y1)
-    #print("roi_wid, roi_ht = ", roi_wid, roi_ht)
+    # print("roi_wid, roi_ht = ", roi_wid, roi_ht)
 
-    roi_heatmap = np.zeros((roi_ht, roi_wid), dtype = np.float32)
+    roi_heatmap = np.zeros((roi_ht, roi_wid), dtype=np.float32)
     heatmap_size_x, heatmap_size_y = roi_wid, roi_ht
 
     ''' Generate a heatmap of roi_heatmap size'''
@@ -287,7 +290,7 @@ def generate_tilted_heatmap_for_channel(keypoint, roi, heatmap, base_blob):
     offset_y = y - int(blob_size / 2.)
 
     if visibility <= 0:  # 0 means not in image, 1 means exisits but not visible, 2 means exists and visible
-        normalized_heatmap = np.zeros((heatmap_size, heatmap_size), dtype = np.float32)
+        normalized_heatmap = np.zeros((heatmap_size, heatmap_size), dtype=np.float32)
         return normalized_heatmap
     else:
         if offset_x < 0:
@@ -325,32 +328,32 @@ def generate_tilted_heatmap_for_channel(keypoint, roi, heatmap, base_blob):
             y_end = 0
             blob_y_st = 0
             blob_y_end = 0
-        #if blob_x_end - blob_x_st != x_end - x_st:
+        # if blob_x_end - blob_x_st != x_end - x_st:
         print("blob_x_end, blob_x_st, x_end, x_st = {},{},{},{}".format(blob_x_end, blob_x_st, x_end, x_st))
         print("keypoint, roi = {}, {}".format(keypoint, roi))
-        #if blob_y_end - blob_y_st != y_end - y_st:
+        # if blob_y_end - blob_y_st != y_end - y_st:
         print("blob_y_end, blob_y_st, y_end, y_st = {},{},{},{}".format(blob_y_end, blob_y_st, y_end, y_st))
         print("keypoint, roi = {}, {}".format(keypoint, roi))
         roi_heatmap[y_st:y_end, x_st:x_end] = base_blob[blob_y_st:blob_y_end, blob_x_st:blob_x_end]
 
     ''' Generate a heatmap of normalized size'''
     normalized_heatmap = cv2.resize(roi_heatmap, (heatmap_size, heatmap_size))
-    #normalized_heatmap = cv2.resize(roi_heatmap, (heatmap_size, heatmap_size), interpolation=cv2.INTER_NEAREST)
+    # normalized_heatmap = cv2.resize(roi_heatmap, (heatmap_size, heatmap_size), interpolation=cv2.INTER_NEAREST)
     heatmap[:, :] = normalized_heatmap[:, :]
     return heatmap
 
 
 def test_generate_tilted_heatmaps_for_batch():
-    #sigma = 4.0
+    # sigma = 4.0
     sigma = 2.0
     base_blob = generate_base_blob(sigma)
     save_base_blob(base_blob)
     loaded_base_blob = load_base_blob()
 
-    keypoints_batch = np.array([[[0, 56, 10, 40, 25, 200, -200, 6], [0, 56, 20, 20, 25, 200, -200, 199], [2, 2, 1, 1, 2, 2, 2, 2]]])  # (1, (x, y, vis)=3, channels=4)
+    keypoints_batch = np.array(
+        [[[0, 56, 10, 40, 25, 200, -200, 6], [0, 56, 20, 20, 25, 200, -200, 199], [2, 2, 1, 1, 2, 2, 2, 2]]])  # (1, (x, y, vis)=3, channels=4)
     rois = np.array([[25.2, 0, 40, 56], [0, 118.44795, 16.126219, 302.04416]])
     heatmaps_all = generate_tilted_heatmaps_for_batch(keypoints_batch, rois, loaded_base_blob)
-
 
     num_candidates = len(heatmaps_all)
     for candidate_id in range(num_candidates):
@@ -361,15 +364,15 @@ def test_generate_tilted_heatmaps_for_batch():
         for channel_id in range(num_channels):
             heatmap = heatmaps[channel_id]
 
-            heatmap_visulize = (255*heatmap).astype(int)
+            heatmap_visulize = (255 * heatmap).astype(int)
             filename = "test_tilted_{}_{}.png".format(str(candidate_id), str(channel_id))
             cv2.imwrite(filename, heatmap_visulize)
     return
 
 
 if __name__ == "__main__":
-    #test_generate_base_blob()
-    #test_generate_heatmap_for_channel()
+    # test_generate_base_blob()
+    # test_generate_heatmap_for_channel()
     test_generate_heatmaps_for_batch()
 
-    #test_generate_tilted_heatmaps_for_batch()
+    # test_generate_tilted_heatmaps_for_batch()

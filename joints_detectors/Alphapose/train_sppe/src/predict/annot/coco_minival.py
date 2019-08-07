@@ -4,16 +4,18 @@
 # -----------------------------------------------------
 
 import os
+
 import h5py
 import torch
 import torch.utils.data as data
 from utils.img import (load_image, cropBox)
+
 from opt import opt
 
 
 class Mscoco_minival(data.Dataset):
     def __init__(self, annoSet='coco-minival-images-newnms/test-dev'):
-        self.img_folder = '../data/coco/images'    # root image folders
+        self.img_folder = '../data/coco/images'  # root image folders
         self.annot = dict()
 
         # Read in annotation information from hdf5 file

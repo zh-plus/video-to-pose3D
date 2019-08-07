@@ -5,20 +5,22 @@
     E-mail: guanghan.ning@jd.com
     Created on July 7th, 2018
 '''
-import sys, os
+import os
+import sys
+
 sys.path.insert(0, os.path.abspath("../detect_to_standard/"))
 from detection_visualizer import *
 
 sys.path.append(os.path.abspath("../keypoint_to_standard/"))
 from keypoint_visualizer import *
 
-import json
 import numpy as np
 import cv2
 
 draw_threshold = 0.2
 
-def show_poly_from_standard_json(json_file_path, classes, joint_pairs, joint_names, img_folder_path = None, output_folder_path = None, flag_track= False):
+
+def show_poly_from_standard_json(json_file_path, classes, joint_pairs, joint_names, img_folder_path=None, output_folder_path=None, flag_track=False):
     # Visualizing: Detection + Pose Estimation
     dets = read_json_from_file(json_file_path)
 
@@ -44,7 +46,7 @@ def show_poly_from_standard_json(json_file_path, classes, joint_pairs, joint_nam
                 if track_id == 55: continue
                 if track_id == 49: continue
                 if track_id == 120: continue
-                img = draw_bbox(img, bbox, score, classes, track_id = track_id)
+                img = draw_bbox(img, bbox, score, classes, track_id=track_id)
             else:
                 img = draw_bbox(img, bbox, score, classes)
 
@@ -56,17 +58,17 @@ def show_poly_from_standard_json(json_file_path, classes, joint_pairs, joint_nam
                 if track_id == 55: continue
                 if track_id == 49: continue
                 if track_id == 120: continue
-                img = draw_poly(img, polys, track_id = track_id)
+                img = draw_poly(img, polys, track_id=track_id)
             else:
                 img = draw_poly(img, polys)
-            img = img*0.3 + img_copy*0.7
+            img = img * 0.3 + img_copy * 0.7
 
             pose_keypoints_2d = candidate["pose_keypoints_2d"]
             joints = reshape_keypoints_into_joints(pose_keypoints_2d)
 
             if flag_track is True:
-                #track_id = candidate["track_id"]
-                #img = show_poses_from_python_data(img, joints, joint_pairs, joint_names, track_id = track_id)
+                # track_id = candidate["track_id"]
+                # img = show_poses_from_python_data(img, joints, joint_pairs, joint_names, track_id = track_id)
                 if track_id == 55: continue
                 if track_id == 49: continue
                 if track_id == 120: continue
@@ -82,7 +84,7 @@ def show_poly_from_standard_json(json_file_path, classes, joint_pairs, joint_nam
 
 
 def make_video_from_images(img_paths, outvid_path, fps=25, size=None,
-               is_color=True, format="XVID"):
+                           is_color=True, format="XVID"):
     """
     Create a video from a list of images.
 
@@ -142,7 +144,7 @@ def draw_poly(mask, poly, track_id=-1):
     poly: np array of shape N x 2
     """
     if track_id == -1:
-        color = (255*rand(), 255*rand(), 255*rand())
+        color = (255 * rand(), 255 * rand(), 255 * rand())
     else:
         color_list = ['purple', 'yellow', 'blue', 'green', 'red', 'skyblue', 'navyblue', 'azure', 'slate', 'chocolate', 'olive', 'orange', 'orchid']
         color_name = color_list[track_id % 13]

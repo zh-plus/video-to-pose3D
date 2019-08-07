@@ -35,6 +35,7 @@ except ImportError:
     from urllib2 import urlopen
 import argparse
 
+
 def parse_args():
     """Parse arguments."""
     parser = argparse.ArgumentParser(
@@ -52,6 +53,7 @@ def parse_args():
     args = parser.parse_args()
     return args
 
+
 URLS = {
     'MXNet': 'https://github.com/apache/incubator-mxnet',
     'Gluon Tutorial(en)': 'http://gluon.mxnet.io',
@@ -66,6 +68,7 @@ REGIONAL_URLS = {
         'Conda(tsinghua)': 'https://mirrors.tuna.tsinghua.edu.cn/anaconda/pkgs/free/',
     }
 }
+
 
 def test_connection(name, url, timeout=10):
     """Simple connection test"""
@@ -86,12 +89,14 @@ def test_connection(name, url, timeout=10):
     load_elapsed = time.time() - start
     print("Timing for {}: {}, DNS: {:.4f} sec, LOAD: {:.4f} sec.".format(name, url, dns_elapsed, load_elapsed))
 
+
 def check_python():
     print('----------Python Info----------')
     print('Version      :', platform.python_version())
     print('Compiler     :', platform.python_compiler())
     print('Build        :', platform.python_build())
     print('Arch         :', platform.architecture())
+
 
 def check_pip():
     print('------------Pip Info-----------')
@@ -101,6 +106,7 @@ def check_pip():
         print('Directory    :', os.path.dirname(pip.__file__))
     except ImportError:
         print('No corresponding pip install for current python.')
+
 
 def check_mxnet():
     print('----------MXNet Info-----------')
@@ -124,6 +130,7 @@ def check_mxnet():
             print("This is very likely due to missing missing or incompatible library files.")
         print(traceback.format_exc())
 
+
 def check_os():
     print('----------System Info----------')
     print('Platform     :', platform.platform())
@@ -131,6 +138,7 @@ def check_os():
     print('node         :', platform.node())
     print('release      :', platform.release())
     print('version      :', platform.version())
+
 
 def check_hardware():
     print('----------Hardware Info----------')
@@ -146,6 +154,7 @@ def check_hardware():
         subprocess.call(['lscpu'])
     elif sys.platform.startswith('win32'):
         subprocess.call(['wmic', 'cpu', 'get', 'name'])
+
 
 def check_network(args):
     print('----------Network Test----------')
@@ -163,6 +172,7 @@ def check_network(args):
             warnings.warn('Region {} do not need specific test, please refer to global sites.'.format(r))
     for name, url in URLS.items():
         test_connection(name, url, args.timeout)
+
 
 if __name__ == '__main__':
     args = parse_args()

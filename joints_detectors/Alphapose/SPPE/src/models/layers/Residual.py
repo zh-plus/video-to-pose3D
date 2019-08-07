@@ -1,7 +1,9 @@
-import torch.nn as nn
 import math
-from .util_models import ConcatTable, CaddTable, Identity
+
+import torch.nn as nn
+
 from opt import opt
+from .util_models import ConcatTable, CaddTable, Identity
 
 
 def Residual(numIn, numOut, *arg, stride=1, net_type='preact', useConv=False, **kw):

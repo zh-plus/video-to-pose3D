@@ -7,21 +7,21 @@
     Adapted from: https://github.com/chenyilun95/tf-cpn/blob/master/data/COCO/COCOAllJoints.py
 '''
 import os
-import os.path as osp
-import numpy as np
-import cv2
-
 import sys
+
+import numpy as np
+
 cur_dir = os.path.dirname(__file__)
 sys.path.insert(0, os.path.join('../data/COCO', 'MSCOCO', 'PythonAPI'))
 
 from pycocotools.coco import COCO
 
+
 class PoseTrackJoints_COCO(object):
     def __init__(self):
         self.kp_names = ['nose', 'l_eye', 'r_eye', 'l_ear', 'r_ear', 'l_shoulder',
-        'r_shoulder', 'l_elbow', 'r_elbow', 'l_wrist', 'r_wrist',
-        'l_hip', 'r_hip', 'l_knee', 'r_knee', 'l_ankle', 'r_ankle']
+                         'r_shoulder', 'l_elbow', 'r_elbow', 'l_wrist', 'r_wrist',
+                         'l_hip', 'r_hip', 'l_knee', 'r_knee', 'l_ankle', 'r_ankle']
         self.max_num_joints = 17
         self.color = np.random.randint(0, 256, (self.max_num_joints, 3))
 
@@ -29,11 +29,11 @@ class PoseTrackJoints_COCO(object):
         self.test_mpi = []
         for mpi, stage in zip([self.mpi, self.test_mpi], ['train', 'val']):
             if stage == 'train':
-                self._train_gt_path=os.path.join('../data/COCO', 'MSCOCO', 'annotations', 'person_keypoints_trainvalminusminival2014.json')
+                self._train_gt_path = os.path.join('../data/COCO', 'MSCOCO', 'annotations', 'person_keypoints_trainvalminusminival2014.json')
 
                 coco = COCO(self._train_gt_path)
             else:
-                self._val_gt_path=os.path.join('../data/COCO', 'MSCOCO', 'annotations', 'person_keypoints_minival2014.json')
+                self._val_gt_path = os.path.join('../data/COCO', 'MSCOCO', 'annotations', 'person_keypoints_minival2014.json')
 
                 coco = COCO(self._val_gt_path)
             if stage == 'train':
@@ -53,16 +53,17 @@ class PoseTrackJoints_COCO(object):
                     joints = change_order_COCO_to_PoseTrack(joints)
 
                     bbox = ann['bbox']
-                    if np.sum(joints[2::3]) == 0 or ann['num_keypoints'] == 0 :
+                    if np.sum(joints[2::3]) == 0 or ann['num_keypoints'] == 0:
                         continue
                     imgname = prefix_head + prefix + '2014/' + 'COCO_' + prefix + '2014' + '_' + str(ann['image_id']).zfill(12) + '.jpg'
-                    humanData = dict(aid = aid,joints=joints, imgpath=imgname, headRect=rect, bbox=bbox, imgid = ann['image_id'], segmentation = ann['segmentation'])
+                    humanData = dict(aid=aid, joints=joints, imgpath=imgname, headRect=rect, bbox=bbox, imgid=ann['image_id'],
+                                     segmentation=ann['segmentation'])
                     mpi.append(humanData)
             elif stage == 'val':
-                files = [(img_id,coco.imgs[img_id]) for img_id in coco.imgs]
+                files = [(img_id, coco.imgs[img_id]) for img_id in coco.imgs]
                 for img_id, img_info in files:
                     imgname = stage + '2014/' + img_info['file_name']
-                    humanData = dict(imgid = img_id,imgpath = imgname)
+                    humanData = dict(imgid=img_id, imgpath=imgname)
                     mpi.append(humanData)
             else:
                 print('PoseTrack_COCO data error, please check')
@@ -74,18 +75,18 @@ class PoseTrackJoints_COCO(object):
 
 
 def change_order_COCO_to_PoseTrack(pose_keypoints_2d_COCO):
-    #COCO:      {0-nose    1-Leye    2-Reye    3-Lear    4Rear    5-Lsho    6-Rsho    7-Lelb    8-Relb    9-Lwri    10-Rwri    11-Lhip    12-Rhip    13-Lkne    14-Rkne    15-Lank    16-Rank}　
-    #Posetrack: {0-Rank    1-Rkne    2-Rhip    3-Lhip    4-Lkne    5-Lank    6-Rwri    7-Relb    8-Rsho    9-Lsho   10-Lelb    11-Lwri    12-neck  13-nose　14-TopHead}
+    # COCO:      {0-nose    1-Leye    2-Reye    3-Lear    4Rear    5-Lsho    6-Rsho    7-Lelb    8-Relb    9-Lwri    10-Rwri    11-Lhip    12-Rhip    13-Lkne    14-Rkne    15-Lank    16-Rank}　
+    # Posetrack: {0-Rank    1-Rkne    2-Rhip    3-Lhip    4-Lkne    5-Lank    6-Rwri    7-Relb    8-Rsho    9-Lsho   10-Lelb    11-Lwri    12-neck  13-nose　14-TopHead}
 
-    order_mapping = {0:13, 1:14, 2:14, 3:14, 4:14, 5:9, 7:10, 9:11, 6:8, 8:7, 10:6, 11:3, 13:4, 15:5, 12:2, 14:1, 16:0}
+    order_mapping = {0: 13, 1: 14, 2: 14, 3: 14, 4: 14, 5: 9, 7: 10, 9: 11, 6: 8, 8: 7, 10: 6, 11: 3, 13: 4, 15: 5, 12: 2, 14: 1, 16: 0}
 
-    num_keypoints_COCO = int(len(pose_keypoints_2d_COCO)/3)
-    pose_keypoints_2d_PoseTrack = 15*3*[0]
+    num_keypoints_COCO = int(len(pose_keypoints_2d_COCO) / 3)
+    pose_keypoints_2d_PoseTrack = 15 * 3 * [0]
 
     for index_COCO in range(num_keypoints_COCO):
-        x = pose_keypoints_2d_COCO[3*index_COCO]
-        y =  pose_keypoints_2d_COCO[3*index_COCO + 1]
-        score = pose_keypoints_2d_COCO[3*index_COCO + 2]
+        x = pose_keypoints_2d_COCO[3 * index_COCO]
+        y = pose_keypoints_2d_COCO[3 * index_COCO + 1]
+        score = pose_keypoints_2d_COCO[3 * index_COCO + 2]
         index_PoseTrack = order_mapping[index_COCO]
 
         if index_PoseTrack == 12:
@@ -93,21 +94,23 @@ def change_order_COCO_to_PoseTrack(pose_keypoints_2d_COCO):
         elif index_PoseTrack == 14:
             continue
         else:
-            pose_keypoints_2d_PoseTrack[3*index_PoseTrack] = x
-            pose_keypoints_2d_PoseTrack[3*index_PoseTrack +1] = y
-            pose_keypoints_2d_PoseTrack[3*index_PoseTrack +2] = score
+            pose_keypoints_2d_PoseTrack[3 * index_PoseTrack] = x
+            pose_keypoints_2d_PoseTrack[3 * index_PoseTrack + 1] = y
+            pose_keypoints_2d_PoseTrack[3 * index_PoseTrack + 2] = score
 
-        pose_keypoints_2d_PoseTrack[3*12] = (pose_keypoints_2d_COCO[3*5] + pose_keypoints_2d_COCO[3*6])/2
-        pose_keypoints_2d_PoseTrack[3*12+1] = (pose_keypoints_2d_COCO[3*5 +1] + pose_keypoints_2d_COCO[3*6 +1])/2
-        pose_keypoints_2d_PoseTrack[3*12+2] = (pose_keypoints_2d_COCO[3*5 +2] + pose_keypoints_2d_COCO[3*6 +2])/2
+        pose_keypoints_2d_PoseTrack[3 * 12] = (pose_keypoints_2d_COCO[3 * 5] + pose_keypoints_2d_COCO[3 * 6]) / 2
+        pose_keypoints_2d_PoseTrack[3 * 12 + 1] = (pose_keypoints_2d_COCO[3 * 5 + 1] + pose_keypoints_2d_COCO[3 * 6 + 1]) / 2
+        pose_keypoints_2d_PoseTrack[3 * 12 + 2] = (pose_keypoints_2d_COCO[3 * 5 + 2] + pose_keypoints_2d_COCO[3 * 6 + 2]) / 2
 
-        pose_keypoints_2d_PoseTrack[3*14] = (pose_keypoints_2d_COCO[3*1] + pose_keypoints_2d_COCO[3*2])/2
-        pose_keypoints_2d_PoseTrack[3*14+1] = 2 * pose_keypoints_2d_PoseTrack[3*13+1] - pose_keypoints_2d_PoseTrack[3*12+1]
-        pose_keypoints_2d_PoseTrack[3*14+2] = (pose_keypoints_2d_COCO[3*1 +2] + pose_keypoints_2d_COCO[3*2 +2])/2
+        pose_keypoints_2d_PoseTrack[3 * 14] = (pose_keypoints_2d_COCO[3 * 1] + pose_keypoints_2d_COCO[3 * 2]) / 2
+        pose_keypoints_2d_PoseTrack[3 * 14 + 1] = 2 * pose_keypoints_2d_PoseTrack[3 * 13 + 1] - pose_keypoints_2d_PoseTrack[3 * 12 + 1]
+        pose_keypoints_2d_PoseTrack[3 * 14 + 2] = (pose_keypoints_2d_COCO[3 * 1 + 2] + pose_keypoints_2d_COCO[3 * 2 + 2]) / 2
     return pose_keypoints_2d_PoseTrack
 
 
 if __name__ == '__main__':
     coco_joints = PoseTrackJoints_COCO()
     train, test = coco_joints.load_data(min_kps=1)
-    from IPython import embed; embed()
+    from IPython import embed;
+
+    embed()

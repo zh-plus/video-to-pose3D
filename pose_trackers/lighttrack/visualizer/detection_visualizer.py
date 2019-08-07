@@ -6,6 +6,7 @@
     Created on June 18th, 2018
 '''
 import matplotlib
+
 matplotlib.use('Agg')
 
 import matplotlib.pyplot as plt
@@ -33,7 +34,7 @@ classes = ['person', 'bicycle', 'car', 'motorcycle', 'airplane', 'bus', 'train',
            'clock', 'vase', 'scissors', 'teddy bear', 'hair drier', 'toothbrush']
 
 
-def show_boxes_from_python_data(img, dets, classes, output_img_path, scale = 1.0):
+def show_boxes_from_python_data(img, dets, classes, output_img_path, scale=1.0):
     plt.cla()
     plt.axis("off")
     plt.imshow(img)
@@ -43,9 +44,9 @@ def show_boxes_from_python_data(img, dets, classes, output_img_path, scale = 1.0
             bbox = det[:4] * scale
             color = (rand(), rand(), rand())
             rect = plt.Rectangle((bbox[0], bbox[1]),
-                                  bbox[2] - bbox[0],
-                                  bbox[3] - bbox[1], fill=False,
-                                  edgecolor=color, linewidth=2.5)
+                                 bbox[2] - bbox[0],
+                                 bbox[3] - bbox[1], fill=False,
+                                 edgecolor=color, linewidth=2.5)
             plt.gca().add_patch(rect)
 
             if cls_dets.shape[1] == 5:
@@ -62,10 +63,10 @@ def find_color_scalar(color_string):
     color_dict = {
         'purple': (255, 0, 255),
         'yellow': (0, 255, 255),
-        'blue':   (255, 0, 0),
-        'green':  (0, 255, 0),
-        'red':    (0, 0, 255),
-        'skyblue':(235,206,135),
+        'blue': (255, 0, 0),
+        'green': (0, 255, 0),
+        'red': (0, 0, 255),
+        'skyblue': (235, 206, 135),
         'navyblue': (128, 0, 0),
         'azure': (255, 255, 240),
         'slate': (255, 0, 127),
@@ -78,9 +79,9 @@ def find_color_scalar(color_string):
     return color_scalar
 
 
-def draw_bbox(img, bbox, score, classes, track_id = -1, img_id = -1):
+def draw_bbox(img, bbox, score, classes, track_id=-1, img_id=-1):
     if track_id == -1:
-        color = (255*rand(), 255*rand(), 255*rand())
+        color = (255 * rand(), 255 * rand(), 255 * rand())
     else:
         color_list = ['purple', 'yellow', 'blue', 'green', 'red', 'skyblue', 'navyblue', 'azure', 'slate', 'chocolate', 'olive', 'orange', 'orchid']
         color_name = color_list[track_id % 13]
@@ -93,37 +94,37 @@ def draw_bbox(img, bbox, score, classes, track_id = -1, img_id = -1):
 
     cv2.rectangle(img,
                   (bbox[0], bbox[1]),
-                  (bbox[0]+ bbox[2], bbox[1] + bbox[3]),
-                  color = color,
-                  thickness = 3)
+                  (bbox[0] + bbox[2], bbox[1] + bbox[3]),
+                  color=color,
+                  thickness=3)
 
     cls_name = classes[0]
     font = cv2.FONT_HERSHEY_SIMPLEX
 
     if track_id == -1:
         cv2.putText(img,
-                    #'{:s} {:.2f}'.format(cls_name, score),
+                    # '{:s} {:.2f}'.format(cls_name, score),
                     '{:s}'.format(cls_name),
-                    (bbox[0], bbox[1]-5),
+                    (bbox[0], bbox[1] - 5),
                     font,
                     fontScale=0.8,
                     color=color,
-                    thickness = 2,
-                    lineType = cv2.LINE_AA)
+                    thickness=2,
+                    lineType=cv2.LINE_AA)
     else:
         cv2.putText(img,
-                    #'{:s} {:.2f}'.format("ID:"+str(track_id), score),
-                    '{:s}'.format("ID:"+str(track_id)),
-                    (bbox[0], bbox[1]-5),
+                    # '{:s} {:.2f}'.format("ID:"+str(track_id), score),
+                    '{:s}'.format("ID:" + str(track_id)),
+                    (bbox[0], bbox[1] - 5),
                     font,
                     fontScale=0.8,
                     color=color,
-                    thickness = 2,
-                    lineType = cv2.LINE_AA)
+                    thickness=2,
+                    lineType=cv2.LINE_AA)
     return img
 
 
-def show_boxes_from_standard_json(json_file_path, classes, img_folder_path = None, output_folder_path = None, track_id = -1):
+def show_boxes_from_standard_json(json_file_path, classes, img_folder_path=None, output_folder_path=None, track_id=-1):
     dets = read_json_from_file(json_file_path)
 
     for det in dets:
@@ -140,7 +141,7 @@ def show_boxes_from_standard_json(json_file_path, classes, img_folder_path = Non
             bbox = np.array(candidate["det_bbox"]).astype(int)
             score = candidate["det_score"]
             if score >= bbox_thresh:
-                img = draw_bbox(img, bbox, score, classes, track_id = track_id)
+                img = draw_bbox(img, bbox, score, classes, track_id=track_id)
 
         if output_folder_path is not None:
             create_folder(output_folder_path)

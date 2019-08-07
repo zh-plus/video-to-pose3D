@@ -1,8 +1,9 @@
 import multiprocessing as mp
+
 import numpy as np
 
-from .serialize import loads, dumps
 from .serialize import dump_pkl, load_pkl
+from .serialize import loads, dumps
 from .utils import del_file
 
 # reduce_method
@@ -19,6 +20,7 @@ FUNC = 0
 QUEUE = 0
 PICKLE = 1
 
+
 class Worker(mp.Process):
     def __init__(self, id, queue, func, func_type, dump_method=QUEUE, *args, **kwargs):
         super(Worker, self).__init__()
@@ -34,7 +36,7 @@ class Worker(mp.Process):
         msg = self._func(self.id, *self.args, **self.kwargs)
         if self._dump_method == QUEUE:
             if self._func_type == FUNC:
-                self._queue.put( dumps([self.id, msg]) )
+                self._queue.put(dumps([self.id, msg]))
             # elif self._func_type == ITER:
             #     for i, msg in enumerate(func(self.id, *self.args, **self.kwargs)):
             #         self._queue.put([self.id, i, dumps(msg)])
@@ -44,6 +46,7 @@ class Worker(mp.Process):
             assert self._func_type == FUNC, 'dump by pickle supports only function that is executed one time.'
             dump_pkl('tmp_result_{}'.format(self.id), [self.id, msg])
             print('dump to temp_file: {}'.format('tmp_result_{}'.format(self.id)))
+
 
 class MultiProc(object):
     def __init__(self, nr_proc, func, func_type=FUNC, reduce_method=ITEMSLIST, dump_method=QUEUE, *args, **kwargs):
@@ -58,7 +61,7 @@ class MultiProc(object):
         for i in range(self.nr_proc):
             w = Worker(self._proc_ids[i], self._queue, func, func_type, dump_method=self._dump_method, *args, **kwargs)
             w.deamon = True
-            self._procs.append( w )
+            self._procs.append(w)
 
     def work(self):
         for p in self._procs:
@@ -67,7 +70,7 @@ class MultiProc(object):
         ret = [[] for i in range(self.nr_proc)]
         for i in range(self.nr_proc):
             if self._dump_method == QUEUE:
-                id, msg = loads( self._queue.get(block=True, timeout=None) )
+                id, msg = loads(self._queue.get(block=True, timeout=None))
                 ret[id] = msg
             elif self._dump_method == PICKLE:
                 pass
@@ -79,7 +82,7 @@ class MultiProc(object):
 
         if self._dump_method == PICKLE:
             for i in range(self.nr_proc):
-                id, msg = load_pkl( 'tmp_result_{}'.format(self._proc_ids[i]) )
+                id, msg = load_pkl('tmp_result_{}'.format(self._proc_ids[i]))
                 ret[id] = msg
                 del_file('tmp_result_{}.pkl'.format(self._proc_ids[i]))
 
@@ -91,29 +94,34 @@ class MultiProc(object):
             result = ret
         elif self._reduce_method == ITEMS:
             for i in range(len(ret[0])):
-                result.append( [ret[j][i] for j in range(len(ret))] )
+                result.append([ret[j][i] for j in range(len(ret))])
         elif self._reduce_method == ITEMSLIST:
             for i in range(len(ret[0])):
                 tmp_res = []
                 for j in range(len(ret)):
                     tmp_res.extend(ret[j][i])
-                result.append( tmp_res )
+                result.append(tmp_res)
         else:
             raise ValueError('Invalid reduce method.')
 
         return result
 
+
 if __name__ == '__main__':
     test_ranges = [0, 100, 200, 300, 400, 500]
+
+
     def test_net(id):
-        test_range = [test_ranges[id], test_ranges[id+1]]
+        test_range = [test_ranges[id], test_ranges[id + 1]]
         x = []
         for i in range(*test_range):
             x.append(np.ones((10, 10)) * i)
         print('finish {}'.format(id))
         return x
 
+
     x = MultiProc(5, test_net, reduce_method=LIST)
     res = x.work()
-    from IPython import embed; embed()
+    from IPython import embed;
 
+    embed()

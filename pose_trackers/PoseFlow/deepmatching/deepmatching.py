@@ -5,14 +5,12 @@
 # the SWIG interface file instead.
 
 
-
-
 """
 Module to compute DeepMatching
 """
 
-
 from sys import version_info
+
 if version_info >= (2, 6, 0):
     def swig_import_helper():
         from os.path import dirname
@@ -29,6 +27,8 @@ if version_info >= (2, 6, 0):
             finally:
                 fp.close()
             return _mod
+
+
     _deepmatching = swig_import_helper()
     del swig_import_helper
 else:
@@ -74,6 +74,7 @@ def _swig_getattr_nondynamic(self, class_type, name, static=1):
     else:
         raise AttributeError(name)
 
+
 def _swig_getattr(self, class_type, name):
     return _swig_getattr_nondynamic(self, class_type, name, 0)
 
@@ -85,26 +86,35 @@ def _swig_repr(self):
         strthis = ""
     return "<%s.%s; %s >" % (self.__class__.__module__, self.__class__.__name__, strthis,)
 
+
 try:
     _object = object
     _newclass = 1
 except AttributeError:
     class _object:
         pass
-    _newclass = 0
 
+
+    _newclass = 0
 
 
 def deepmatching_numpy(cim1, cim2, options):
     return _deepmatching.deepmatching_numpy(cim1, cim2, options)
+
+
 deepmatching_numpy = _deepmatching.deepmatching_numpy
+
 
 def usage_python():
     return _deepmatching.usage_python()
+
+
 usage_python = _deepmatching.usage_python
 
 from numpy import float32, rollaxis, ascontiguousarray
-def deepmatching( im1=None, im2=None, options=""):
+
+
+def deepmatching(im1=None, im2=None, options=""):
     """
     matches = deepmatching.deepmatching(image1, image2, options='')
     Compute the 'DeepMatching' between two images.
@@ -113,23 +123,21 @@ def deepmatching( im1=None, im2=None, options=""):
     The function returns a numpy array with 6 columns, each row being x1 y1 x2 y2 score index.
      (index refers to the local maximum from which the match was retrieved)
     Version 1.2"""
-    if None in (im1,im2):
-      usage_python()
-      return
+    if None in (im1, im2):
+        usage_python()
+        return
 
-# convert images
+    # convert images
     if im1.dtype != float32:
         im1 = im1.astype(float32)
     if im2.dtype != float32:
         im2 = im2.astype(float32)
-    assert len(im1.shape)==3 and len(im2.shape)==3, "images must have 3 dimensions"
+    assert len(im1.shape) == 3 and len(im2.shape) == 3, "images must have 3 dimensions"
     h, w, nchannels = im1.shape
-    assert nchannels==3, "images must have 3 channels"
-    im1 = ascontiguousarray(rollaxis(im1,2))
-    im2 = ascontiguousarray(rollaxis(im2,2))
-    corres = deepmatching_numpy( im1, im2, options)
+    assert nchannels == 3, "images must have 3 channels"
+    im1 = ascontiguousarray(rollaxis(im1, 2))
+    im2 = ascontiguousarray(rollaxis(im2, 2))
+    corres = deepmatching_numpy(im1, im2, options)
     return corres
 
 # This file is compatible with both classic and new-style classes.
-
-

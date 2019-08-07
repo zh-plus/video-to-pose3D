@@ -1,12 +1,13 @@
 #  import ipdb;ipdb.set_trace()
 
-import os
-import sys
-import cv2
 import ntpath
-import torch.utils.data
+import os
 import shutil
+import sys
+
+import cv2
 import numpy as np
+import torch.utils.data
 
 main_path = os.path.dirname(os.path.realpath(__file__))
 sys.path.append(main_path)
@@ -17,7 +18,6 @@ from SPPE.src.main_fast_inference import *
 from tqdm import tqdm
 from fn import getTime
 from pPose_nms import write_json
-
 
 args = opt
 args.dataset = 'coco'

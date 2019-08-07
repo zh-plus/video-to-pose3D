@@ -10,16 +10,15 @@
     Unless their pose are very similar, normally their poses should not match.
 
 '''
-import numpy as np
 import argparse
-import torch
+import os
+import sys
 
-import sys, os
+import torch
 
 sys.path.append(os.path.abspath("../"))
 sys.path.append(os.path.abspath("../graph/utils/"))
 
-from lighttrack.utils.utils_json import *
 from lighttrack.utils.utils_io_folder import *
 
 from lighttrack.visualizer.keypoint_visualizer import *
@@ -153,9 +152,7 @@ def keypoints_to_graph(keypoints, bbox):
 
 # ----------------------------------------------------
 from lighttrack.graph.gcn_utils.io import IO
-from lighttrack.graph.gcn_utils.gcn_model import Model
 from lighttrack.graph.gcn_utils.processor_siamese_gcn import SGCN_Processor
-import torchlight
 
 
 class Pose_Matcher(SGCN_Processor):

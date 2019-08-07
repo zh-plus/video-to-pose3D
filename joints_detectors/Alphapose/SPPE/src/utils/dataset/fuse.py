@@ -1,17 +1,18 @@
 import os
-import h5py
 from functools import reduce
 
+import h5py
 import torch.utils.data as data
-from ..pose import generateSampleBox
+
 from opt import opt
+from ..pose import generateSampleBox
 
 
 class Mscoco(data.Dataset):
     def __init__(self, train=True, sigma=1,
                  scale_factor=0.25, rot_factor=30, label_type='Gaussian'):
-        self.img_folder = '../data/'    # root image folders
-        self.is_train = train           # training set or test set
+        self.img_folder = '../data/'  # root image folders
+        self.is_train = train  # training set or test set
         self.inputResH = 320
         self.inputResW = 256
         self.outputResH = 80
@@ -25,15 +26,15 @@ class Mscoco(data.Dataset):
         self.nJoints_mpii = 16
         self.nJoints = 33
 
-        self.accIdxs = (1, 2, 3, 4, 5, 6, 7, 8,             # COCO
+        self.accIdxs = (1, 2, 3, 4, 5, 6, 7, 8,  # COCO
                         9, 10, 11, 12, 13, 14, 15, 16, 17,
-                        18, 19, 20, 21, 22, 23,             # MPII
+                        18, 19, 20, 21, 22, 23,  # MPII
                         28, 29, 32, 33)
 
-        self.flipRef = ((2, 3), (4, 5), (6, 7),             # COCO
+        self.flipRef = ((2, 3), (4, 5), (6, 7),  # COCO
                         (8, 9), (10, 11), (12, 13),
                         (14, 15), (16, 17),
-                        (18, 23), (19, 22), (20, 21),       # MPII
+                        (18, 23), (19, 22), (20, 21),  # MPII
                         (28, 33), (29, 32), (30, 31))
 
         '''

@@ -1,11 +1,12 @@
-from torch.nn.modules.module import Module
-from torch.autograd import Function, Variable
 import resample2d_cuda
+from torch.autograd import Function, Variable
+from torch.nn.modules.module import Module
+
 
 class Resample2dFunction(Function):
 
     @staticmethod
-    def forward(ctx, input1, input2, kernel_size=1, bilinear= True):
+    def forward(ctx, input1, input2, kernel_size=1, bilinear=True):
         assert input1.is_contiguous()
         assert input2.is_contiguous()
 
@@ -37,9 +38,10 @@ class Resample2dFunction(Function):
 
         return grad_input1, grad_input2, None
 
+
 class Resample2d(Module):
 
-    def __init__(self, kernel_size=1, bilinear = True):
+    def __init__(self, kernel_size=1, bilinear=True):
         super(Resample2d, self).__init__()
         self.kernel_size = kernel_size
         self.bilinear = bilinear

@@ -6,19 +6,19 @@ from __future__ import division
 from __future__ import print_function
 
 import argparse
-from tqdm import tqdm
-from pose_estimation.utilitys import plot_keypoint, preprocess
 import time
 
+import cv2
 import torch
+from tqdm import tqdm
+
 from lib.config import cfg
 from lib.config import update_config
-
-from lib.utils.transforms import *
 from lib.core.inference import get_final_preds
-import cv2
 #  import ataset
 from lib.detector.yolo.human_detector import main as yolo_det
+from lib.utils.transforms import *
+from pose_estimation.utilitys import plot_keypoint, preprocess
 
 
 def parse_args():
@@ -66,6 +66,8 @@ def parse_args():
 
 kpt_queue = []
 from scipy.signal import savgol_filter
+
+
 def smooth_filter(kpts):
     if len(kpt_queue) < 6:
         kpt_queue.append(kpts)
@@ -77,37 +79,35 @@ def smooth_filter(kpts):
     kpt_queue.append(kpts)
 
     # transpose to shape (17, 2, num, 50) 关节点、横纵坐标、每帧人数、帧数
-    transKpts = np.array(kpt_queue).transpose(1,2,3,0)
+    transKpts = np.array(kpt_queue).transpose(1, 2, 3, 0)
 
     window_length = queue_length - 1 if queue_length % 2 == 0 else queue_length - 2
     # array, window_length越大越好, polyorder 
-    result = savgol_filter(transKpts, window_length, 3).transpose(3, 0, 1, 2) #shape(frame_num, human_num, 17, 2)
+    result = savgol_filter(transKpts, window_length, 3).transpose(3, 0, 1, 2)  # shape(frame_num, human_num, 17, 2)
 
     # 返回倒数第几帧
     return result[-3]
 
 
-
-
-
 ##### load model
 def model_load(config):
-    model = eval('models.'+config.MODEL.NAME+'.get_pose_net')(
+    model = eval('models.' + config.MODEL.NAME + '.get_pose_net')(
         config, is_train=False
     )
-    model_file_name  = 'models/pytorch/pose_coco/pose_hrnet_w32_256x192.pth'
+    model_file_name = 'models/pytorch/pose_coco/pose_hrnet_w32_256x192.pth'
     #  model_file_name  = 'models/pytorch/pose_coco/pose_hrnet_w48_256x192.pth'
     #  model_file_name  = 'models/pytorch/pose_coco/pose_hrnet_w32_384x288.pth'
     state_dict = torch.load(model_file_name)
     from collections import OrderedDict
     new_state_dict = OrderedDict()
     for k, v in state_dict.items():
-        name = k # remove module.
+        name = k  # remove module.
         #  print(name,'\t')
         new_state_dict[name] = v
     model.load_state_dict(new_state_dict)
     model.eval()
     return model
+
 
 def ckpt_time(t0=None, display=None):
     if not t0:
@@ -115,13 +115,15 @@ def ckpt_time(t0=None, display=None):
     else:
         t1 = time.time()
         if display:
-            print('consume {:2f} second'.format(t1-t0))
-        return t1-t0, t1
+            print('consume {:2f} second'.format(t1 - t0))
+        return t1 - t0, t1
 
 
 ###### 加载human detecotor model
 from lib.detector.yolo.human_detector import load_model as yolo_model
+
 human_model = yolo_model()
+
 
 def main():
     tick = 0
@@ -140,19 +142,17 @@ def main():
     # Video writer
     fourcc = cv2.VideoWriter_fourcc(*'mp4v')
     input_fps = cam.get(cv2.CAP_PROP_FPS)
-    out = cv2.VideoWriter(args.video_output,fourcc, input_fps, (input_image.shape[1],input_image.shape[0]))
-
+    out = cv2.VideoWriter(args.video_output, fourcc, input_fps, (input_image.shape[1], input_image.shape[0]))
 
     #### load pose-hrnet MODEL
     pose_model = model_load(cfg)
     pose_model.cuda()
 
     item = 0
-    for i in tqdm(range(video_length-1)):
+    for i in tqdm(range(video_length - 1)):
 
         x0 = ckpt_time()
         ret_val, input_image = cam.read()
-
 
         if args.camera:
             # 为取得实时速度，每两帧取一帧预测
@@ -167,7 +167,7 @@ def main():
             inputs, origin_img, center, scale = preprocess(input_image, bboxs, scores, cfg)
         except:
             out.write(input_image)
-            cv2.namedWindow("enhanced",0);
+            cv2.namedWindow("enhanced", 0);
             cv2.resizeWindow("enhanced", 960, 480);
             cv2.imshow('enhanced', input_image)
             cv2.waitKey(2)
@@ -175,12 +175,11 @@ def main():
 
         with torch.no_grad():
             # compute output heatmap
-            inputs = inputs[:,[2,1,0]]
+            inputs = inputs[:, [2, 1, 0]]
             output = pose_model(inputs.cuda())
             # compute coordinate
             preds, maxvals = get_final_preds(
                 cfg, output.clone().cpu().numpy(), np.asarray(center), np.asarray(scale))
-
 
         # 平滑点
         preds = smooth_filter(preds)
@@ -195,6 +194,7 @@ def main():
             cv2.resizeWindow("enhanced", 960, 480);
             cv2.imshow('enhanced', image)
             cv2.waitKey(1)
+
 
 if __name__ == '__main__':
     main()

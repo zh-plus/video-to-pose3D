@@ -7,11 +7,12 @@
 
 import argparse
 
+
 def parse_args():
     parser = argparse.ArgumentParser(description='Training script')
 
     # General arguments
-    parser.add_argument('-d', '--dataset', default='h36m', type=str, metavar='NAME', help='target dataset') # h36m or humaneva
+    parser.add_argument('-d', '--dataset', default='h36m', type=str, metavar='NAME', help='target dataset')  # h36m or humaneva
     parser.add_argument('-k', '--keypoints', default='cpn_ft_h36m_dbb', type=str, metavar='NAME', help='2D detections to use')
     parser.add_argument('-str', '--subjects-train', default='S1,S5,S6,S7,S8', type=str, metavar='LIST',
                         help='training subjects separated by comma')
@@ -71,7 +72,7 @@ def parse_args():
     parser.add_argument('--viz-downsample', type=int, default=1, metavar='N', help='downsample FPS by a factor N')
     parser.add_argument('--viz-size', type=int, default=5, metavar='N', help='image size')
     # self add
-    parser.add_argument('--input-npz',dest='input_npz', type=str, default='', help='input 2d numpy file')
+    parser.add_argument('--input-npz', dest='input_npz', type=str, default='', help='input 2d numpy file')
 
     parser.set_defaults(bone_length_term=True)
     parser.set_defaults(data_augmentation=True)

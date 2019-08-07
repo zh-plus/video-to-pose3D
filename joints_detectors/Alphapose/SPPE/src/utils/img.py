@@ -1,15 +1,13 @@
-import numpy as np
-import torch
-import scipy.misc
-from torchsample.transforms import SpecialCrop, Pad
-from torchvision import transforms
-import torch.nn.functional as F
-
-from PIL import Image
-from copy import deepcopy
 import matplotlib
+import numpy as np
+import scipy.misc
+import torch
+import torch.nn.functional as F
+from torchsample.transforms import SpecialCrop, Pad
+
 matplotlib.use('agg')
 import matplotlib.pyplot as plt
+
 
 def im_to_torch(img):
     img = np.transpose(img, (2, 0, 1))  # C*H*W
@@ -225,7 +223,7 @@ def transformBoxInvert_batch(pt, ul, br, inpH, inpW, resH, resW):
     size = br - ul
     size[:, 0] *= (inpH / inpW)
 
-    lenH, _ = torch.max(size, dim=1)   # [n,]
+    lenH, _ = torch.max(size, dim=1)  # [n,]
     lenW = lenH * (inpW / inpH)
 
     _pt = (pt * lenH[:, np.newaxis, np.newaxis]) / resH
@@ -300,12 +298,12 @@ def shuffleLR(x, dataset):
             tmp = x[:, dim1].clone()
             x[:, dim1] = x[:, dim0].clone()
             x[:, dim0] = tmp.clone()
-            #x[:, dim0], x[:, dim1] = deepcopy((x[:, dim1], x[:, dim0]))
+            # x[:, dim0], x[:, dim1] = deepcopy((x[:, dim1], x[:, dim0]))
         else:
             tmp = x[dim1].clone()
             x[dim1] = x[dim0].clone()
             x[dim0] = tmp.clone()
-            #x[dim0], x[dim1] = deepcopy((x[dim1], x[dim0]))
+            # x[dim0], x[dim1] = deepcopy((x[dim1], x[dim0]))
     return x
 
 
@@ -336,7 +334,7 @@ def drawMPII(inps, preds):
     fig = plt.figure()
     plt.imshow(imgs[0])
     ax = fig.add_subplot(1, 1, 1)
-    #print(preds.shape)
+    # print(preds.shape)
     for p in range(16):
         x, y = preds[0][p]
         cor = (round(x), round(y)), 10
@@ -364,7 +362,7 @@ def drawCOCO(inps, preds, scores):
     fig = plt.figure()
     plt.imshow(imgs[0])
     ax = fig.add_subplot(1, 1, 1)
-    #print(preds.shape)
+    # print(preds.shape)
     for p in range(17):
         if scores[0][p][0] < 0.2:
             continue

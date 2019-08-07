@@ -1,4 +1,5 @@
 from opt import opt
+
 try:
     from utils.img import transformBoxInvert, transformBoxInvert_batch
 except ImportError:
@@ -39,7 +40,7 @@ def heatmapAccuracy(output, label, idxs):
 
     norm = torch.ones(preds.size(0)) * opt.outputResH / 10
     dists = calc_dists(preds, gt, norm)
-    #print(dists)
+    # print(dists)
     acc = torch.zeros(len(idxs) + 1)
     avg_acc = 0
     cnt = 0

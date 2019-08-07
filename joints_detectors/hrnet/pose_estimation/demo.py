@@ -7,19 +7,19 @@ from __future__ import print_function
 
 import argparse
 
-from pose_estimation.utilitys import plot_keypoint, preprocess
-from lib.config import cfg
-from lib.config import update_config
-from lib.utils.transforms import *
-from lib.core.inference import get_final_preds
-
 import cv2
 import torch
-import torch.nn.parallel
 import torch.backends.cudnn as cudnn
+import torch.nn.parallel
 import torch.optim
 import torch.utils.data
 import torch.utils.data.distributed
+
+from lib.config import cfg
+from lib.config import update_config
+from lib.core.inference import get_final_preds
+from lib.utils.transforms import *
+from pose_estimation.utilitys import plot_keypoint, preprocess
 
 
 def parse_args():

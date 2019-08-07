@@ -3,10 +3,11 @@
 # Written by Jiefeng Li (jeff.lee.sjtu@gmail.com)
 # -----------------------------------------------------
 
-import torch
 import json
 import os
+
 import numpy as np
+import torch
 
 ''' Constant Configuration '''
 delta1 = 1
@@ -49,7 +50,7 @@ def pose_nms(bboxes, pose_preds, pose_scores):
     # Do pPose-NMS
     pick = []
     merge_ids = []
-    while(human_scores.shape[0] != 0):
+    while (human_scores.shape[0] != 0):
         # Pick the one with highest score
         pick_id = torch.argmax(human_scores)
         pick.append(human_ids[pick_id])
@@ -68,7 +69,7 @@ def pose_nms(bboxes, pose_preds, pose_scores):
 
         if delete_ids.shape[0] == 0:
             delete_ids = pick_id
-        #else:
+        # else:
         #    delete_ids = torch.from_numpy(delete_ids)
 
         merge_ids.append(human_ids[delete_ids])
@@ -260,7 +261,7 @@ def get_parametric_distance(i, all_preds, keypoint_scores, ref_dist):
 
     point_dist = torch.exp((-1) * dist / delta2)
     final_dist = torch.sum(score_dists, dim=1) + mu * \
-        torch.sum(point_dist, dim=1)
+                 torch.sum(point_dist, dim=1)
 
     return final_dist
 

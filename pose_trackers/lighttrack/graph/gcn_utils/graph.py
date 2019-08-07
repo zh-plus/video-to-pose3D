@@ -8,6 +8,7 @@
 '''
 import numpy as np
 
+
 class Graph():
     """ The Graph to model the skeletons extracted by the openpose
     Args:
@@ -47,8 +48,8 @@ class Graph():
             self.num_node = 15
             self_link = [(i, i) for i in range(self.num_node)]
             neighbor_link = [(0, 1), (1, 2), (3, 4), (4, 5), (2, 8),
-                              (8, 7), (7, 6), (8, 12), (12, 9), (9, 10),
-                              (10, 11), (9, 3), (12, 13), (13, 14)]
+                             (8, 7), (7, 6), (8, 12), (12, 9), (9, 10),
+                             (10, 11), (9, 3), (12, 13), (13, 14)]
             self.edge = self_link + neighbor_link
             self.center = 12
         elif layout == 'COCO':
@@ -77,7 +78,7 @@ class Graph():
         elif strategy == 'distance':
             A = np.zeros((len(valid_hop), self.num_node, self.num_node))
             for i, hop in enumerate(valid_hop):
-                A[i][self.hop_dis == hop] = normalize_adjacency[self.hop_dis ==hop]
+                A[i][self.hop_dis == hop] = normalize_adjacency[self.hop_dis == hop]
             self.A = A
         elif strategy == 'spatial':
             A = []
@@ -126,7 +127,7 @@ def normalize_digraph(A):
     Dn = np.zeros((num_node, num_node))
     for i in range(num_node):
         if Dl[i] > 0:
-            Dn[i, i] = Dl[i]**(-1)
+            Dn[i, i] = Dl[i] ** (-1)
     AD = np.dot(A, Dn)
     return AD
 
@@ -137,6 +138,6 @@ def normalize_undigraph(A):
     Dn = np.zeros((num_node, num_node))
     for i in range(num_node):
         if Dl[i] > 0:
-            Dn[i, i] = Dl[i]**(-0.5)
+            Dn[i, i] = Dl[i] ** (-0.5)
     DAD = np.dot(np.dot(Dn, A), Dn)
     return DAD

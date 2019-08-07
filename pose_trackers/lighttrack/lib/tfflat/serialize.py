@@ -2,10 +2,11 @@
 # -*- coding: utf-8 -*-
 ### modified from https://github.com/ppwwyyxx/tensorpack
 
-import os
 import sys
+
 import msgpack
 import msgpack_numpy
+
 msgpack_numpy.patch()
 
 # https://github.com/apache/arrow/pull/1223#issuecomment-359895666
@@ -62,12 +63,14 @@ def loads_pyarrow(buf):
 
 def dump_pkl(name, obj):
     with open('{}.pkl'.format(name), 'wb') as f:
-        pickle.dump( obj, f, pickle.HIGHEST_PROTOCOL )
+        pickle.dump(obj, f, pickle.HIGHEST_PROTOCOL)
+
 
 def load_pkl(name):
     with open('{}.pkl'.format(name), 'rb') as f:
-        ret = pickle.load( f )
+        ret = pickle.load(f)
     return ret
+
 
 if pa is None:
     loads = loads_msgpack
@@ -75,4 +78,3 @@ if pa is None:
 else:
     loads = loads_pyarrow
     dumps = dumps_pyarrow
-

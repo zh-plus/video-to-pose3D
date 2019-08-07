@@ -4,16 +4,22 @@
     Dec, 2016
 '''
 
-import sys, os, shutil
+import os
+import shutil
+import sys
+
 sys.path.append(os.path.abspath("../utility/"))
 sys.path.append(os.path.abspath("../standardize/convert/"))
+
 
 def test_script(script_name):
     cmd = os.path.join(os.getcwd(), script_name)
     os.system('{} {}'.format('python', cmd))
 
+
 def clean():
     shutil.rmtree('../temp_folder')
+
 
 def main():
     scripts = ['test_utils_natural_sort.py',

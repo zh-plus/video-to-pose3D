@@ -8,8 +8,9 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
+cimport
+numpy as np
 import numpy as np
-cimport numpy as np
 
 cdef inline np.float32_t max(np.float32_t a, np.float32_t b):
     return a if a >= b else b
@@ -29,7 +30,7 @@ def cpu_nms(np.ndarray[np.float32_t, ndim=2] dets, np.float thresh):
 
     cdef int ndets = dets.shape[0]
     cdef np.ndarray[np.int_t, ndim=1] suppressed = \
-            np.zeros((ndets), dtype=np.int)
+        np.zeros((ndets), dtype=np.int)
 
     # nominal indices
     cdef int _i, _j

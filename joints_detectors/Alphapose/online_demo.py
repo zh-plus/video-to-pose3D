@@ -1,6 +1,3 @@
-import os
-import sys
-
 import cv2
 from torch.autograd import Variable
 from tqdm import tqdm
@@ -23,6 +20,7 @@ def loop():
         yield n
         n += 1
 
+
 if __name__ == "__main__":
     webcam = args.webcam
     mode = args.mode
@@ -31,9 +29,9 @@ if __name__ == "__main__":
 
     # Load input video
     fvs = WebcamLoader(webcam).start()
-    (fourcc,fps,frameSize) = fvs.videoinfo()
+    (fourcc, fps, frameSize) = fvs.videoinfo()
     # Data writer
-    save_path = os.path.join(args.outputpath, 'AlphaPose_webcam'+webcam+'.avi')
+    save_path = os.path.join(args.outputpath, 'AlphaPose_webcam' + webcam + '.avi')
     writer = DataWriter(args.save_video, save_path, cv2.VideoWriter_fourcc(*'XVID'), fps, frameSize).start()
 
     # Load YOLO model
@@ -67,7 +65,7 @@ if __name__ == "__main__":
 
     print('Starting webcam demo, press Ctrl + C to terminate...')
     sys.stdout.flush()
-    im_names_desc =  tqdm(loop())
+    im_names_desc = tqdm(loop())
     for i in im_names_desc:
         try:
             start_time = getTime()
@@ -85,9 +83,9 @@ if __name__ == "__main__":
                 runtime_profile['dt'].append(det_time)
                 # NMS process
                 dets = dynamic_write_results(prediction, opt.confidence,
-                                     opt.num_classes, nms=True, nms_conf=opt.nms_thesh)
+                                             opt.num_classes, nms=True, nms_conf=opt.nms_thesh)
                 if isinstance(dets, int) or dets.shape[0] == 0:
-                    writer.save(None, None, None, None, None, orig_img, im_name=str(i)+'.jpg')
+                    writer.save(None, None, None, None, None, orig_img, im_name=str(i) + '.jpg')
                     continue
                 im_dim_list = torch.index_select(im_dim_list, 0, dets[:, 0].long())
                 scaling_factor = torch.min(det_inp_dim / im_dim_list, 1)[0].view(-1, 1)
@@ -115,8 +113,8 @@ if __name__ == "__main__":
                 ckpt_time, pose_time = getTime(ckpt_time)
                 runtime_profile['pt'].append(pose_time)
 
-                writer.save(boxes, scores, hm.cpu(), pt1, pt2, orig_img, im_name=str(i)+'.jpg')
-                
+                writer.save(boxes, scores, hm.cpu(), pt1, pt2, orig_img, im_name=str(i) + '.jpg')
+
                 ckpt_time, post_time = getTime(ckpt_time)
                 runtime_profile['pn'].append(post_time)
 
@@ -134,7 +132,7 @@ if __name__ == "__main__":
     if (args.save_img or args.save_video) and not args.vis_fast:
         print('===========================> Rendering remaining images in the queue...')
         print('===========================> If this step takes too long, you can enable the --vis_fast flag to use fast rendering (real-time).')
-    while(writer.running()):
+    while (writer.running()):
         pass
     writer.stop()
     final_result = writer.results()

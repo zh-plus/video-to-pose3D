@@ -16,20 +16,18 @@ from lighttrack.detector.detector_yolov3 import *
 from lighttrack.graph.visualize_pose_matching import *
 # import Network
 from lighttrack.lib.lib_kernel.lib_nms.nms.cpu_nms import cpu_soft_nms
-from lighttrack.network_mobile_deconv import Network
 from lighttrack.lib.nms.gpu_nms import gpu_nms
 from lighttrack.lib.tfflat.base import Tester
+from lighttrack.network_mobile_deconv import Network
 
 sys.path.append(os.path.abspath("./graph/"))
-from lighttrack.utils.utils_json import *
-from lighttrack.visualizer import *
 from lighttrack.utils.utils_io_file import *
 from lighttrack.utils.utils_io_folder import *
 
 flag_visualize = True
-flag_nms = False #Default is False, unless you know what you are doing
+flag_nms = False  # Default is False, unless you know what you are doing
 
-os.environ["CUDA_VISIBLE_DEVICES"]="0"
+os.environ["CUDA_VISIBLE_DEVICES"] = "0"
 
 
 def initialize_parameters():
@@ -42,7 +40,7 @@ def initialize_parameters():
     min_box_size = 0.
 
     global keyframe_interval, enlarge_scale, pose_matching_threshold
-    keyframe_interval = 40 # choice examples: [2, 3, 5, 8, 10]
+    keyframe_interval = 40  # choice examples: [2, 3, 5, 8, 10]
     enlarge_scale = 0.2
     pose_matching_threshold = 0.5
 
@@ -59,7 +57,6 @@ def initialize_parameters():
 
 
 def light_track_camera(pose_estimator, video_capture):
-
     global total_time_POSE, total_time_DET, total_time_ALL, total_num_FRAMES, total_num_PERSONS
     ''' statistics: get total time for lighttrack processing'''
     st_time_total = time.time()
@@ -104,13 +101,13 @@ def light_track_camera(pose_estimator, video_capture):
             # if nothing detected at keyframe, regard next frame as keyframe because there is nothing to track
             if num_dets <= 0:
                 # add empty result
-                bbox_det_dict = {"img_id":img_id,
-                                 "det_id":  0,
+                bbox_det_dict = {"img_id": img_id,
+                                 "det_id": 0,
                                  "track_id": None,
                                  "bbox": [0, 0, 2, 2]}
                 bbox_dets_list.append(bbox_det_dict)
 
-                keypoints_dict = {"img_id":img_id,
+                keypoints_dict = {"img_id": img_id,
                                   "det_id": 0,
                                   "track_id": None,
                                   "bbox": [0, 0, 2, 2],
@@ -129,7 +126,7 @@ def light_track_camera(pose_estimator, video_capture):
             ''' 2. statistics: get total number of detected persons '''
             total_num_PERSONS += num_dets
 
-            if img_id > 0:   # First frame does not have previous frame
+            if img_id > 0:  # First frame does not have previous frame
                 bbox_list_prev_frame = bbox_dets_list_q.popleft()
                 keypoints_list_prev_frame = keypoints_list_q.popleft()
 
@@ -145,28 +142,28 @@ def light_track_camera(pose_estimator, video_capture):
 
                 # Keyframe: use provided bbox
                 if bbox_invalid(bbox_det):
-                    track_id = None # this id means null
+                    track_id = None  # this id means null
                     keypoints = []
-                    bbox_det = [0, 0, 2 ,2]
+                    bbox_det = [0, 0, 2, 2]
                     # update current frame bbox
-                    bbox_det_dict = {"img_id":img_id,
-                                     "det_id":det_id,
+                    bbox_det_dict = {"img_id": img_id,
+                                     "det_id": det_id,
                                      "track_id": track_id,
-                                     "bbox":bbox_det}
+                                     "bbox": bbox_det}
                     bbox_dets_list.append(bbox_det_dict)
                     # update current frame keypoints
-                    keypoints_dict = {"img_id":img_id,
-                                      "det_id":det_id,
-                                      "bbox":bbox_det,
+                    keypoints_dict = {"img_id": img_id,
+                                      "det_id": det_id,
+                                      "bbox": bbox_det,
                                       "track_id": track_id,
-                                      "keypoints":keypoints}
+                                      "keypoints": keypoints}
                     keypoints_list.append(keypoints_dict)
                     continue
 
                 # update current frame bbox
-                bbox_det_dict = {"img_id":img_id,
-                                 "det_id":det_id,
-                                 "bbox":bbox_det}
+                bbox_det_dict = {"img_id": img_id,
+                                 "det_id": det_id,
+                                 "bbox": bbox_det}
 
                 # obtain keypoints for each bbox position in the keyframe
                 st_time_pose = time.time()
@@ -174,7 +171,7 @@ def light_track_camera(pose_estimator, video_capture):
                 end_time_pose = time.time()
                 total_time_POSE += (end_time_pose - st_time_pose)
 
-                if img_id == 0:   # First frame, all ids are assigned automatically
+                if img_id == 0:  # First frame, all ids are assigned automatically
                     track_id = next_id
                     next_id += 1
                 else:
@@ -185,30 +182,30 @@ def light_track_camera(pose_estimator, video_capture):
                         del keypoints_list_prev_frame[match_index]
 
                 # update current frame bbox
-                bbox_det_dict = {"img_id":img_id,
-                                 "det_id":det_id,
-                                 "track_id":track_id,
-                                 "bbox":bbox_det}
+                bbox_det_dict = {"img_id": img_id,
+                                 "det_id": det_id,
+                                 "track_id": track_id,
+                                 "bbox": bbox_det}
                 bbox_dets_list.append(bbox_det_dict)
 
                 # update current frame keypoints
-                keypoints_dict = {"img_id":img_id,
-                                  "det_id":det_id,
-                                  "bbox":bbox_det,
-                                  "track_id":track_id,
-                                  "keypoints":keypoints}
+                keypoints_dict = {"img_id": img_id,
+                                  "det_id": det_id,
+                                  "bbox": bbox_det,
+                                  "track_id": track_id,
+                                  "keypoints": keypoints}
                 keypoints_list.append(keypoints_dict)
 
             # For candidate that is not assopciated yet, perform data association based on Pose Similarity (SGCN)
             for det_id in range(num_dets):
                 bbox_det_dict = bbox_dets_list[det_id]
                 keypoints_dict = keypoints_list[det_id]
-                assert(det_id == bbox_det_dict["det_id"])
-                assert(det_id == keypoints_dict["det_id"])
+                assert (det_id == bbox_det_dict["det_id"])
+                assert (det_id == keypoints_dict["det_id"])
 
-                if bbox_det_dict["track_id"] == -1:    # this id means matching not found yet
+                if bbox_det_dict["track_id"] == -1:  # this id means matching not found yet
                     track_id, match_index = get_track_id_SGCN(bbox_det_dict["bbox"], bbox_list_prev_frame,
-                                                                 keypoints_dict["keypoints"], keypoints_list_prev_frame)
+                                                              keypoints_dict["keypoints"], keypoints_list_prev_frame)
 
                     if track_id != -1:  # if candidate from prev frame matched, prevent it from matching another
                         del bbox_list_prev_frame[match_index]
@@ -251,44 +248,44 @@ def light_track_camera(pose_estimator, video_capture):
                 if bbox_det_next[2] == 0 or bbox_det_next[3] == 0:
                     bbox_det_next = [0, 0, 2, 2]
                     total_num_PERSONS -= 1
-                assert(bbox_det_next[2] != 0 and bbox_det_next[3] != 0) # width and height must not be zero
-                bbox_det_dict_next = {"img_id":img_id,
-                                     "det_id":det_id,
-                                     "track_id":track_id,
-                                     "bbox":bbox_det_next}
+                assert (bbox_det_next[2] != 0 and bbox_det_next[3] != 0)  # width and height must not be zero
+                bbox_det_dict_next = {"img_id": img_id,
+                                      "det_id": det_id,
+                                      "track_id": track_id,
+                                      "bbox": bbox_det_next}
 
                 # next frame keypoints
                 st_time_pose = time.time()
                 keypoints_next = inference_keypoints(pose_estimator, bbox_det_dict_next, cur_img)[0]["keypoints"]
                 end_time_pose = time.time()
                 total_time_POSE += (end_time_pose - st_time_pose)
-                #print("time for pose estimation: ", (end_time_pose - st_time_pose))
+                # print("time for pose estimation: ", (end_time_pose - st_time_pose))
 
                 # check whether the target is lost
                 target_lost = is_target_lost(keypoints_next)
 
                 if target_lost is False:
                     bbox_dets_list_next.append(bbox_det_dict_next)
-                    keypoints_dict_next = {"img_id":img_id,
-                                           "det_id":det_id,
-                                           "bbox":bbox_det,
-                                           "track_id":track_id,
-                                           "keypoints":keypoints_next}
+                    keypoints_dict_next = {"img_id": img_id,
+                                           "det_id": det_id,
+                                           "bbox": bbox_det,
+                                           "track_id": track_id,
+                                           "keypoints": keypoints_next}
                     keypoints_list_next.append(keypoints_dict_next)
 
                 else:
                     # remove this bbox, do not register its keypoints
-                    bbox_det_dict_next = {"img_id":img_id,
-                                          "det_id":  det_id,
+                    bbox_det_dict_next = {"img_id": img_id,
+                                          "det_id": det_id,
                                           "track_id": -1,
                                           "bbox": [0, 0, 2, 2]}
                     bbox_dets_list_next.append(bbox_det_dict_next)
 
-                    keypoints_null = 45*[0]
-                    keypoints_dict_next = {"img_id":img_id,
-                                           "det_id":det_id,
+                    keypoints_null = 45 * [0]
+                    keypoints_dict_next = {"img_id": img_id,
+                                           "det_id": det_id,
                                            "bbox": [0, 0, 2, 2],
-                                           "track_id":track_id,
+                                           "track_id": track_id,
                                            "keypoints": []}
                     keypoints_list_next.append(keypoints_dict_next)
                     print("Target lost. Process this frame again as keyframe. \n\n\n")
@@ -328,10 +325,13 @@ def light_track_camera(pose_estimator, video_capture):
     end_time_total = time.time()
     total_time_ALL += (end_time_total - st_time_total)
 
+
 ''' ---------------------------------------------------------------------------'''
 ''' ---------------------------------------------------------------------------'''
+
+
 def get_track_id_SGCN(bbox_cur_frame, bbox_list_prev_frame, keypoints_cur_frame, keypoints_list_prev_frame):
-    assert(len(bbox_list_prev_frame) == len(keypoints_list_prev_frame))
+    assert (len(bbox_list_prev_frame) == len(keypoints_list_prev_frame))
 
     min_index = None
     min_matching_score = sys.maxsize
@@ -414,7 +414,7 @@ def get_iou_score(bbox_gt, bbox_det):
     boxB = xywh_to_x1y1x2y2(bbox_det)
 
     iou_score = iou(boxA, boxB)
-    #print("iou_score: ", iou_score)
+    # print("iou_score: ", iou_score)
     return iou_score
 
 
@@ -424,16 +424,16 @@ def is_target_lost(keypoints, method="max_average"):
         # pure average
         score = 0
         for i in range(num_keypoints):
-            score += keypoints[3*i + 2]
-        score /= num_keypoints*1.0
+            score += keypoints[3 * i + 2]
+        score /= num_keypoints * 1.0
         print("target_score: {}".format(score))
     elif method == "max_average":
         score_list = keypoints[2::3]
         score_list_sorted = sorted(score_list)
         top_N = 4
-        assert(top_N < num_keypoints)
-        top_scores = [score_list_sorted[-i] for i in range(1, top_N+1)]
-        score = sum(top_scores)/top_N
+        assert (top_N < num_keypoints)
+        top_scores = [score_list_sorted[-i] for i in range(1, top_N + 1)]
+        score = sum(top_scores) / top_N
     if score < 0.6:
         return True
     else:
@@ -466,7 +466,7 @@ def iou(boxA, boxB):
 
 
 def get_bbox_from_keypoints(keypoints_python_data):
-    if keypoints_python_data == [] or keypoints_python_data == 45*[0]:
+    if keypoints_python_data == [] or keypoints_python_data == 45 * [0]:
         return [0, 0, 2, 2]
 
     num_keypoints = len(keypoints_python_data)
@@ -476,7 +476,7 @@ def get_bbox_from_keypoints(keypoints_python_data):
         x = keypoints_python_data[3 * keypoint_id]
         y = keypoints_python_data[3 * keypoint_id + 1]
         vis = keypoints_python_data[3 * keypoint_id + 2]
-        if vis != 0 and vis!= 3:
+        if vis != 0 and vis != 3:
             x_list.append(x)
             y_list.append(y)
     min_x = min(x_list)
@@ -487,14 +487,14 @@ def get_bbox_from_keypoints(keypoints_python_data):
     if not x_list or not y_list:
         return [0, 0, 2, 2]
 
-    scale = enlarge_scale # enlarge bbox by 20% with same center position
+    scale = enlarge_scale  # enlarge bbox by 20% with same center position
     bbox = enlarge_bbox([min_x, min_y, max_x, max_y], scale)
     bbox_in_xywh = x1y1x2y2_to_xywh(bbox)
     return bbox_in_xywh
 
 
 def enlarge_bbox(bbox, scale):
-    assert(scale > 0)
+    assert (scale > 0)
     min_x, min_y, max_x, max_y = bbox
     margin_x = int(0.5 * scale * (max_x - min_x))
     margin_y = int(0.5 * scale * (max_y - min_y))
@@ -509,10 +509,10 @@ def enlarge_bbox(bbox, scale):
     width = max_x - min_x
     height = max_y - min_y
     if max_y < 0 or max_x < 0 or width <= 0 or height <= 0 or width > 2000 or height > 2000:
-        min_x=0
-        max_x=2
-        min_y=0
-        max_y=2
+        min_x = 0
+        max_x = 2
+        min_y = 0
+        max_y = 2
 
     bbox_enlarged = [min_x, min_y, max_x, max_y]
     return bbox_enlarged
@@ -636,8 +636,10 @@ def get_keypoints_from_pose(pose_heatmaps, details, cls_skeleton, crops, start_i
         # map back to original images
         crops[test_image_id, :] = details[test_image_id - start_id, :]
         for w in range(cfg.nr_skeleton):
-            cls_skeleton[test_image_id, w, 0] = cls_skeleton[test_image_id, w, 0] / cfg.data_shape[1] * (crops[test_image_id][2] - crops[test_image_id][0]) + crops[test_image_id][0]
-            cls_skeleton[test_image_id, w, 1] = cls_skeleton[test_image_id, w, 1] / cfg.data_shape[0] * (crops[test_image_id][3] - crops[test_image_id][1]) + crops[test_image_id][1]
+            cls_skeleton[test_image_id, w, 0] = cls_skeleton[test_image_id, w, 0] / cfg.data_shape[1] * (
+                        crops[test_image_id][2] - crops[test_image_id][0]) + crops[test_image_id][0]
+            cls_skeleton[test_image_id, w, 1] = cls_skeleton[test_image_id, w, 1] / cfg.data_shape[0] * (
+                        crops[test_image_id][3] - crops[test_image_id][1]) + crops[test_image_id][1]
     return cls_skeleton
 
 
@@ -670,7 +672,7 @@ def pose_to_standard_mot(keypoints_list_list, dets_list_list):
 
     num_keypoints_list = len(keypoints_list_list)
     num_dets_list = len(dets_list_list)
-    assert(num_keypoints_list == num_dets_list)
+    assert (num_keypoints_list == num_dets_list)
 
     for i in range(num_dets_list):
 
@@ -681,15 +683,15 @@ def pose_to_standard_mot(keypoints_list_list, dets_list_list):
             continue
         img_path = dets_list[0]["imgpath"]
         img_folder_path = os.path.dirname(img_path)
-        img_name =  os.path.basename(img_path)
+        img_name = os.path.basename(img_path)
         img_info = {"folder": img_folder_path,
                     "name": img_name,
                     "id": [int(i)]}
-        openSVAI_python_data = {"image":[], "candidates":[]}
+        openSVAI_python_data = {"image": [], "candidates": []}
         openSVAI_python_data["image"] = img_info
 
         num_dets = len(dets_list)
-        num_keypoints = len(keypoints_list) #number of persons, not number of keypoints for each person
+        num_keypoints = len(keypoints_list)  # number of persons, not number of keypoints for each person
         candidate_list = []
 
         for j in range(num_dets):
@@ -703,7 +705,7 @@ def pose_to_standard_mot(keypoints_list_list, dets_list_list):
 
             bbox_dets_data = dets_list[det_id]
             det = dets_dict["bbox"]
-            if  det == [0, 0, 2, 2]:
+            if det == [0, 0, 2, 2]:
                 # do not provide keypoints
                 candidate = {"det_bbox": [0, 0, 2, 2],
                              "det_score": 0}
@@ -711,7 +713,7 @@ def pose_to_standard_mot(keypoints_list_list, dets_list_list):
                 bbox_in_xywh = det[0:4]
                 keypoints = keypoints_dict["keypoints"]
 
-                track_score = sum(keypoints[2::3])/len(keypoints)/3.0
+                track_score = sum(keypoints[2::3]) / len(keypoints) / 3.0
 
                 candidate = {"det_bbox": bbox_in_xywh,
                              "det_score": 1,
@@ -744,7 +746,7 @@ def bbox_invalid(bbox):
     return False
 
 
-def visualize_img(img, candidates, img_id, flag_track = True):
+def visualize_img(img, candidates, img_id, flag_track=True):
     for candidate in candidates:
         bbox = np.array(candidate["bbox"]).astype(int)
 
@@ -763,7 +765,7 @@ def visualize_img(img, candidates, img_id, flag_track = True):
 
         if flag_track is True:
             track_id = candidate["track_id"]
-            img = show_poses_from_python_data(img, joints, joint_pairs, joint_names, track_id = track_id, flag_only_draw_sure = True)
+            img = show_poses_from_python_data(img, joints, joint_pairs, joint_names, track_id=track_id, flag_only_draw_sure=True)
         else:
             img = show_poses_from_python_data(img, joints, joint_pairs, joint_names)
     return img

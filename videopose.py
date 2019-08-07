@@ -1,18 +1,18 @@
 import os
 import time
-from common.utils import Timer
+
+import torch.backends.cudnn as cudnn
 
 from common.arguments import parse_args
 from common.camera import *
 from common.generators import UnchunkedGenerator
 from common.loss import *
 from common.model import *
+from common.utils import Timer
 from joints_detectors.Alphapose.gene_npz import handle_video as alpha_pose
 from joints_detectors.hrnet.pose_estimation.video import generate_kpts as hr_pose
 
 # from joints_detectors.openpose.main import generate_kpts as open_pose
-
-import torch.backends.cudnn as cudnn
 
 cudnn.benchmark = False
 

@@ -17,10 +17,9 @@ import numpy as np
 import torch
 from torch.utils.data import Dataset
 
-from lib.utils.transforms import get_affine_transform
 from lib.utils.transforms import affine_transform
 from lib.utils.transforms import fliplr_joints
-
+from lib.utils.transforms import get_affine_transform
 
 logger = logging.getLogger(__name__)
 
@@ -107,7 +106,7 @@ class JointsDataset(Dataset):
 
         return center, scale
 
-    def __len__(self,):
+    def __len__(self, ):
         return len(self.db)
 
     def __getitem__(self, idx):
@@ -144,7 +143,7 @@ class JointsDataset(Dataset):
 
         if self.is_train:
             if (np.sum(joints_vis[:, 0]) > self.num_joints_half_body
-                and np.random.rand() < self.prob_half_body):
+                    and np.random.rand() < self.prob_half_body):
                 c_half_body, s_half_body = self.half_body_transform(
                     joints, joints_vis
                 )
@@ -154,8 +153,8 @@ class JointsDataset(Dataset):
 
             sf = self.scale_factor
             rf = self.rotation_factor
-            s = s * np.clip(np.random.randn()*sf + 1, 1 - sf, 1 + sf)
-            r = np.clip(np.random.randn()*rf, -rf*2, rf*2) \
+            s = s * np.clip(np.random.randn() * sf + 1, 1 - sf, 1 + sf)
+            r = np.clip(np.random.randn() * rf, -rf * 2, rf * 2) \
                 if random.random() <= 0.6 else 0
 
             if self.flip and random.random() <= 0.5:
@@ -216,11 +215,11 @@ class JointsDataset(Dataset):
 
             joints_x, joints_y = joints_x / num_vis, joints_y / num_vis
 
-            area = rec['scale'][0] * rec['scale'][1] * (self.pixel_std**2)
+            area = rec['scale'][0] * rec['scale'][1] * (self.pixel_std ** 2)
             joints_center = np.array([joints_x, joints_y])
             bbox_center = np.array(rec['center'])
-            diff_norm2 = np.linalg.norm((joints_center-bbox_center), 2)
-            ks = np.exp(-1.0*(diff_norm2**2) / ((0.2)**2*2.0*area))
+            diff_norm2 = np.linalg.norm((joints_center - bbox_center), 2)
+            ks = np.exp(-1.0 * (diff_norm2 ** 2) / ((0.2) ** 2 * 2.0 * area))
 
             metric = (0.2 / 16) * num_vis + 0.45 - 0.2 / 16
             if ks > metric:

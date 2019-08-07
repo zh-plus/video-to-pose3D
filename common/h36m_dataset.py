@@ -5,16 +5,18 @@
 # LICENSE file in the root directory of this source tree.
 #
 
-import numpy as np
 import copy
-from common.skeleton import Skeleton
-from common.mocap_dataset import MocapDataset
-from common.camera import normalize_screen_coordinates, image_coordinates
 
-h36m_skeleton = Skeleton(parents=[-1,  0,  1,  2,  3,  4,  0,  6,  7,  8,  9,  0, 11, 12, 13, 14, 12,
-       16, 17, 18, 19, 20, 19, 22, 12, 24, 25, 26, 27, 28, 27, 30],
-       joints_left=[6, 7, 8, 9, 10, 16, 17, 18, 19, 20, 21, 22, 23],
-       joints_right=[1, 2, 3, 4, 5, 24, 25, 26, 27, 28, 29, 30, 31])
+import numpy as np
+
+from common.camera import normalize_screen_coordinates
+from common.mocap_dataset import MocapDataset
+from common.skeleton import Skeleton
+
+h36m_skeleton = Skeleton(parents=[-1, 0, 1, 2, 3, 4, 0, 6, 7, 8, 9, 0, 11, 12, 13, 14, 12,
+                                  16, 17, 18, 19, 20, 19, 22, 12, 24, 25, 26, 27, 28, 27, 30],
+                         joints_left=[6, 7, 8, 9, 10, 16, 17, 18, 19, 20, 21, 22, 23],
+                         joints_right=[1, 2, 3, 4, 5, 24, 25, 26, 27, 28, 29, 30, 31])
 
 h36m_cameras_intrinsic_params = [
     {
@@ -25,7 +27,7 @@ h36m_cameras_intrinsic_params = [
         'tangential_distortion': [-0.0009756988729350269, -0.00142447161488235],
         'res_w': 1000,
         'res_h': 1002,
-        'azimuth': 70, # Only used for visualization
+        'azimuth': 70,  # Only used for visualization
     },
     {
         'id': '55011271',
@@ -35,7 +37,7 @@ h36m_cameras_intrinsic_params = [
         'tangential_distortion': [-0.0016190266469493508, -0.0027408944442868233],
         'res_w': 1000,
         'res_h': 1000,
-        'azimuth': -70, # Only used for visualization
+        'azimuth': -70,  # Only used for visualization
     },
     {
         'id': '58860488',
@@ -45,7 +47,7 @@ h36m_cameras_intrinsic_params = [
         'tangential_distortion': [0.0014843869721516967, -0.0007599993259645998],
         'res_w': 1000,
         'res_h': 1000,
-        'azimuth': 110, # Only used for visualization
+        'azimuth': 110,  # Only used for visualization
     },
     {
         'id': '60457274',
@@ -55,7 +57,7 @@ h36m_cameras_intrinsic_params = [
         'tangential_distortion': [-0.0005872055771760643, -0.0018133620033040643],
         'res_w': 1000,
         'res_h': 1002,
-        'azimuth': -110, # Only used for visualization
+        'azimuth': -110,  # Only used for visualization
     },
 ]
 
@@ -206,6 +208,7 @@ h36m_cameras_extrinsic_params = {
     ],
 }
 
+
 class Human36mDataset(MocapDataset):
     def __init__(self, path, remove_static_joints=True):
         super().__init__(fps=50, skeleton=h36m_skeleton)
@@ -220,9 +223,9 @@ class Human36mDataset(MocapDataset):
 
                 # Normalize camera frame
                 cam['center'] = normalize_screen_coordinates(cam['center'], w=cam['res_w'], h=cam['res_h']).astype('float32')
-                cam['focal_length'] = cam['focal_length']/cam['res_w']*2
+                cam['focal_length'] = cam['focal_length'] / cam['res_w'] * 2
                 if 'translation' in cam:
-                    cam['translation'] = cam['translation']/1000 # mm to meters
+                    cam['translation'] = cam['translation'] / 1000  # mm to meters
 
                 # Add intrinsic parameters vector
                 cam['intrinsic'] = np.concatenate((cam['focal_length'],
@@ -253,4 +256,3 @@ class Human36mDataset(MocapDataset):
 
     def supports_semi_supervised(self):
         return True
-

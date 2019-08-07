@@ -5,16 +5,18 @@
     Dec, 2016
 '''
 
-import sys, os, time, math, copy
+import copy
+import math
+import os
+import sys
+
 import matplotlib.pyplot as plt
 
 caffe_root = '/home/ngh/dev/Github/caffe-GNet/'
 sys.path.insert(0, caffe_root + 'python')
 
 sys.path.append(os.path.abspath("../utils/"))
-from utils_io_file import is_image
 from utils_io_folder import *
-from utils_nms import find_joints_in_heatmaps_nms
 from utils_convert_heatmap import *
 
 heatmap_size = 64
@@ -23,26 +25,28 @@ heatmap_size = 64
 flag_demo_poses = True
 flag_demo_heatmaps = False
 flag_selective = False
-IMG_NAMES_TO_SHOW= ['im1097.jpg']
+IMG_NAMES_TO_SHOW = ['im1097.jpg']
 
 # Choose what and how to draw joints and connections
 flag_only_draw_sure = False
 flag_color_sticks = True
 
 ''' ----------------------Pre-processing images------------------------------'''
+
+
 def preprocess(img, mean):
-    img_out = np.double(img)/255.0
+    img_out = np.double(img) / 255.0
     img_out = img_out - mean
     img_out = img_out.astype(np.float)
     img_out = im_list_to_blob([img_out])
-    #The data is in this format (batch_size, channel, y, x)
-    #the channel order is cv2 default: (BGR)
+    # The data is in this format (batch_size, channel, y, x)
+    # the channel order is cv2 default: (BGR)
     return img_out
 
 
 def im_list_to_blob(ims):
-    #Convert a list of images into a network input.
-    #Assumes images are already prepared (means subtracted, BGR order, ...).
+    # Convert a list of images into a network input.
+    # Assumes images are already prepared (means subtracted, BGR order, ...).
     max_shape = np.array([im.shape for im in ims]).max(axis=0)
     num_images = len(ims)
     blob = np.zeros((num_images, max_shape[0], max_shape[1], 4),
@@ -60,22 +64,24 @@ def im_list_to_blob(ims):
 
 
 def produceCenterLabelMap(wid, ht, sigma):
-	X = []
-	Y = []
-	for j in range(ht):
-		X.append([i for i in range(wid)])
-		Y.append([j for i in range(wid)])
-	X = np.array(X)
-	X = X - wid/2.0
-	Y = np.array(Y)
-	Y = Y - ht/2.0
-	D2 = X*X + Y*Y
-	Exponent = D2 / 2.0 / sigma / sigma
-	label_map = np.exp(-1 * Exponent)
-	return label_map
+    X = []
+    Y = []
+    for j in range(ht):
+        X.append([i for i in range(wid)])
+        Y.append([j for i in range(wid)])
+    X = np.array(X)
+    X = X - wid / 2.0
+    Y = np.array(Y)
+    Y = Y - ht / 2.0
+    D2 = X * X + Y * Y
+    Exponent = D2 / 2.0 / sigma / sigma
+    label_map = np.exp(-1 * Exponent)
+    return label_map
 
 
 ''' -----------------Process images in various ways--------------------------'''
+
+
 def process_img_scales_and_flips(net, img, norm_size, scales, heatmap_layer_name):
     heatmaps_from_multi_res = []
     for scale in scales:
@@ -107,7 +113,7 @@ def process_img_scale_and_flip(net, img, norm_size, scale, heatmap_layer_name):
         img_scaled = img_overlay
         heatmaps_overlay = img_to_heatmaps(net, img_overlay, norm_size, heatmap_layer_name)
         # 3. recover the heatmaps to original: get small middle maps and resize
-        ratio = 1/scale
+        ratio = 1 / scale
         heatmaps_output_scaled = get_central_heatmaps(heatmaps_overlay, ratio, heatmap_size)
 
     heatmaps_flipped = process_img_flip(net, img_scaled, norm_size, heatmap_layer_name)
@@ -143,7 +149,7 @@ def process_img_scale(net, img, norm_size, scale, heatmap_layer_name):
         img_overlay = overlay_img(img, scale)
         heatmaps_overlay = img_to_heatmaps(net, img_overlay, norm_size, heatmap_layer_name)
         # 3. recover the heatmaps to original: get small middle maps and resize
-        ratio = 1/scale
+        ratio = 1 / scale
         heatmaps_output = get_central_heatmaps(heatmaps_overlay, ratio, heatmap_size)
 
     return heatmaps_output
@@ -177,13 +183,13 @@ def img_to_heatmaps(net, img_raw, norm_size, heatmap_layer_name):
 
 
 def applyDNN(images, net):
-	net_out = net.forward(data=images.astype(np.float32, copy=False))
-	return net_out
+    net_out = net.forward(data=images.astype(np.float32, copy=False))
+    return net_out
 
 
 def extract_heatmaps(network_output, heatmap_layer_name):
     heatmaps = []
-    for key, value in network_output.items() :
+    for key, value in network_output.items():
         if key != heatmap_layer_name: continue
         for ith_map in range(15):
             heatmap = value[0, ith_map, :, :]
@@ -192,6 +198,8 @@ def extract_heatmaps(network_output, heatmap_layer_name):
 
 
 ''' --------------------------Demo Detections--------------------------------'''
+
+
 def demo_heatmaps(heatmaps, joint_names):
     for ith_map, heatmap in enumerate(heatmaps):
         draw_heatmap(heatmap, joint_names[ith_map])
@@ -201,7 +209,7 @@ def draw_heatmap(heatmap, joint_name):
     fig = plt.figure(1, figsize=(5, 5))
     ax2 = fig.add_subplot(111)
 
-    permut = [len(heatmap) - i- 1 for i in range(len(heatmap))]
+    permut = [len(heatmap) - i - 1 for i in range(len(heatmap))]
     heatmap_flipped = heatmap[permut, :]
 
     ax2.imshow(heatmap_flipped, origin='lower', aspect='auto')
@@ -212,7 +220,7 @@ def draw_heatmap(heatmap, joint_name):
 
 def demo_poses_in_img(img, joints_output, joint_pairs, joint_names):
     scale = 4
-    img_demo = cv2.resize(img, None, fx= scale, fy= scale, interpolation = cv2.INTER_CUBIC)
+    img_demo = cv2.resize(img, None, fx=scale, fy=scale, interpolation=cv2.INTER_CUBIC)
 
     joints = copy.deepcopy(joints_output)
     for joint in joints:
@@ -231,7 +239,7 @@ def demo_poses_in_img(img, joints_output, joint_pairs, joint_names):
 def add_joints_to_image(img_demo, joints):
     for joint in joints:
         [j, i, sure] = joint
-        cv2.circle(img_demo, (i, j), 8, (255,255,255), thickness=2)
+        cv2.circle(img_demo, (i, j), 8, (255, 255, 255), thickness=2)
     return img_demo
 
 
@@ -248,7 +256,7 @@ def add_joint_connections_to_image(img_demo, joints, joint_pairs, joint_names):
         y2, x2, sure2 = joints[ind_2]
         if flag_only_draw_sure is False:
             sure1 = sure2 = 1
-        if sure1 ==1 and sure2 == 1:
+        if sure1 == 1 and sure2 == 1:
             cv2.line(img_demo, (x1, y1), (x2, y2), color, 8)
     return img_demo
 
@@ -257,17 +265,19 @@ def find_color_scalar(color_string):
     color_dict = {
         'purple': (255, 0, 255),
         'yellow': (0, 255, 255),
-        'blue':   (255, 0, 0),
-        'green':  (0, 255, 0),
-        'red':    (0, 0, 255),
-        'skyblue':(235,206,135)
+        'blue': (255, 0, 0),
+        'green': (0, 255, 0),
+        'red': (0, 0, 255),
+        'skyblue': (235, 206, 135)
     }
     color_scalar = color_dict[color_string]
     return color_scalar
 
 
 ''' --------------------Derive joints from heatmaps -------------------------'''
-def find_joints_in_heatmaps(heatmaps, thresh = 0.01):
+
+
+def find_joints_in_heatmaps(heatmaps, thresh=0.01):
     joints = []
     for ct, heatmap in enumerate(heatmaps):
         if ct != 14:
@@ -297,16 +307,17 @@ def coord_by_scale(peak):
     return [j, i]
 
 
-
 ''' ------------------Post-processing for heatmaps and images----------------'''
+
+
 def flip_heatmaps_order(heatmaps):
     heatmaps_flip = []
-    left_right_pairs = [ [6, 3],  # shoulder
-                         [7, 4],  # elbow
-                         [8, 5],  # wrist
-                         [12, 9],  # pelvis
-                         [13, 10],  # knee
-                         [14, 11] ] # ankle
+    left_right_pairs = [[6, 3],  # shoulder
+                        [7, 4],  # elbow
+                        [8, 5],  # wrist
+                        [12, 9],  # pelvis
+                        [13, 10],  # knee
+                        [14, 11]]  # ankle
     new_order = [1, 2, 6, 7, 8, 3, 4, 5, 12, 13, 14, 9, 10, 11, 15]
     for heatmap_id in range(15):
         new_id = new_order[heatmap_id]
@@ -327,23 +338,25 @@ def crop_image(img_raw, scale):
 
 
 def overlay_img(img_raw, scale):
-    assert(scale > 1)
+    assert (scale > 1)
     # 1. resize image to smaller scale
-    img_resized = cv2.resize(img_raw, (0, 0), fx = 1.0/scale, fy =1.0/scale)
+    img_resized = cv2.resize(img_raw, (0, 0), fx=1.0 / scale, fy=1.0 / scale)
     # 2. put resized image to the middle of a gray image with original image size
     ht, wid, channels = img_raw.shape
     ht_resized, wid_resized, channels = img_resized.shape
-    x_offset = int((wid - wid_resized)/2.0)
-    y_offset = int((ht - ht_resized)/2.0)
+    x_offset = int((wid - wid_resized) / 2.0)
+    y_offset = int((ht - ht_resized) / 2.0)
 
     img_overlay = img_raw.copy()
-    img_overlay[:,:,:] = 128
+    img_overlay[:, :, :] = 128
     img_overlay[y_offset:(y_offset + ht_resized), x_offset:(x_offset + wid_resized)] = img_resized
     return img_overlay
 
 
 ''' ------------------------Save predictions---------------------------------'''
-def save_pose_preditions(joints, save_folder, image_name, rect_id = 0):
+
+
+def save_pose_preditions(joints, save_folder, image_name, rect_id=0):
     # joints: [[joint_1] [joint_2] [joint_3] [joint_4]]
     # the joint_id is implicitly reflected by the index in the list
     x = np.arange(15)
@@ -352,11 +365,11 @@ def save_pose_preditions(joints, save_folder, image_name, rect_id = 0):
     image_save_name = base_name + '.mat'
     save_path = os.path.join(save_folder, image_save_name)
 
-    scipy.io.savemat(save_path, dict(jointids = x, joints = joints,image_name = image_name,rect_id= rect_id))
+    scipy.io.savemat(save_path, dict(jointids=x, joints=joints, image_name=image_name, rect_id=rect_id))
     return
 
 
-def save_heatmap_preditions(heatmaps, save_folder, image_name, rect_id = 0):
+def save_heatmap_preditions(heatmaps, save_folder, image_name, rect_id=0):
     # joints: [[joint_1] [joint_2] [joint_3] [joint_4]]
     # the joint_id is implicitly reflected by the index in the list
     x = np.arange(15)
@@ -365,7 +378,7 @@ def save_heatmap_preditions(heatmaps, save_folder, image_name, rect_id = 0):
     image_save_name = 'heatmap_' + base_name + '.mat'
     save_path = os.path.join(save_folder, image_save_name)
 
-    scipy.io.savemat(save_path, dict(jointids = x, heatmaps = heatmaps, image_name = image_name, rect_id= rect_id))
+    scipy.io.savemat(save_path, dict(jointids=x, heatmaps=heatmaps, image_name=image_name, rect_id=rect_id))
     return
 
 

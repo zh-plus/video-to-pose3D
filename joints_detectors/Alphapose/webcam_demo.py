@@ -1,8 +1,3 @@
-from opt import opt
-
-import os
-import sys
-
 import cv2
 from tqdm import tqdm
 
@@ -22,6 +17,7 @@ def loop():
         yield n
         n += 1
 
+
 if __name__ == "__main__":
     webcam = args.webcam
     mode = args.mode
@@ -30,7 +26,7 @@ if __name__ == "__main__":
 
     # Load input video
     data_loader = WebcamLoader(webcam).start()
-    (fourcc,fps,frameSize) = data_loader.videoinfo()
+    (fourcc, fps, frameSize) = data_loader.videoinfo()
 
     # Load detection loader
     print('Loading YOLO model..')
@@ -48,7 +44,7 @@ if __name__ == "__main__":
     pose_model.eval()
 
     # Data writer
-    save_path = os.path.join(args.outputpath, 'AlphaPose_webcam'+webcam+'.avi')
+    save_path = os.path.join(args.outputpath, 'AlphaPose_webcam' + webcam + '.avi')
     writer = DataWriter(args.save_video, save_path, cv2.VideoWriter_fourcc(*'XVID'), fps, frameSize).start()
 
     runtime_profile = {
@@ -59,7 +55,7 @@ if __name__ == "__main__":
 
     print('Starting webcam demo, press Ctrl + C to terminate...')
     sys.stdout.flush()
-    im_names_desc =  tqdm(loop())
+    im_names_desc = tqdm(loop())
     batchSize = args.posebatch
     for i in im_names_desc:
         try:
@@ -81,7 +77,7 @@ if __name__ == "__main__":
                 num_batches = datalen // batchSize + leftover
                 hm = []
                 for j in range(num_batches):
-                    inps_j = inps[j*batchSize:min((j +  1)*batchSize, datalen)].cuda()
+                    inps_j = inps[j * batchSize:min((j + 1) * batchSize, datalen)].cuda()
                     hm_j = pose_model(inps_j)
                     hm.append(hm_j)
                 hm = torch.cat(hm)
@@ -96,8 +92,8 @@ if __name__ == "__main__":
             if args.profile:
                 # TQDM
                 im_names_desc.set_description(
-                'det time: {dt:.4f} | pose time: {pt:.4f} | post processing: {pn:.4f}'.format(
-                    dt=np.mean(runtime_profile['dt']), pt=np.mean(runtime_profile['pt']), pn=np.mean(runtime_profile['pn']))
+                    'det time: {dt:.4f} | pose time: {pt:.4f} | post processing: {pn:.4f}'.format(
+                        dt=np.mean(runtime_profile['dt']), pt=np.mean(runtime_profile['pt']), pn=np.mean(runtime_profile['pn']))
                 )
         except KeyboardInterrupt:
             break
@@ -107,7 +103,7 @@ if __name__ == "__main__":
     if (args.save_img or args.save_video) and not args.vis_fast:
         print('===========================> Rendering remaining images in the queue...')
         print('===========================> If this step takes too long, you can enable the --vis_fast flag to use fast rendering (real-time).')
-    while(writer.running()):
+    while (writer.running()):
         pass
     writer.stop()
     final_result = writer.results()

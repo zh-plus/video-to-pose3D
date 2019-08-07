@@ -3,29 +3,33 @@
 再生成3D坐标，
 再绘图，不是实时的
 '''
-import os
-import cv2
-from tqdm import tqdm
-import time
-import numpy as np
-from argparse import ArgumentParser
 import sys
+import time
+from argparse import ArgumentParser
 
-from pyqtgraph.Qt import QtCore, QtGui
-import pyqtgraph.opengl as gl
+import cv2
 import pyqtgraph as pg
-
+import pyqtgraph.opengl as gl
+from pyqtgraph.Qt import QtCore, QtGui
 from pyqtgraph.opengl import *
+from tqdm import tqdm
+
 from joints_detectors.openpose.main import load_model as Model2Dload
+
 model2D = Model2Dload()
 from joints_detectors.openpose.main import generate_frame_kpt as OpenPoseInterface
+
 interface2D = OpenPoseInterface
 from tools.utils import videopose_model_load as Model3Dload
+
 model3D = Model3Dload()
 from tools.utils import interface as VideoPoseInterface
+
 interface3D = VideoPoseInterface
-from tools.utils import draw_3Dimg, draw_2Dimg, videoInfo, resize_img, common
+from tools.utils import draw_2Dimg, videoInfo, resize_img, common
+
 common = common()
+
 
 # 先得到所有视频的2D坐标，再统一生成3D坐标
 def VideoPoseJoints(VideoName):
@@ -47,20 +51,21 @@ def VideoPoseJoints(VideoName):
     return joint3D
 
 
-
 item = 0
-pos_init = np.zeros(shape=(17,3))
+pos_init = np.zeros(shape=(17, 3))
+
+
 class Visualizer(object):
     def __init__(self, skeletons_3d):
         self.traces = dict()
         self.app = QtGui.QApplication(sys.argv)
         self.w = gl.GLViewWidget()
-        self.w.opts['distance'] = 45.0       ## distance of camera from center
-        self.w.opts['fov'] = 60              ## horizontal field of view in degrees
-        self.w.opts['elevation'] = 10       ## camera's angle of elevation in degrees 仰俯角
-        self.w.opts['azimuth'] = 90         ## camera's azimuthal angle in degrees 方位角
+        self.w.opts['distance'] = 45.0  ## distance of camera from center
+        self.w.opts['fov'] = 60  ## horizontal field of view in degrees
+        self.w.opts['elevation'] = 10  ## camera's angle of elevation in degrees 仰俯角
+        self.w.opts['azimuth'] = 90  ## camera's azimuthal angle in degrees 方位角
         self.w.setWindowTitle('pyqtgraph example: GLLinePlotItem')
-        self.w.setGeometry(450, 700, 980, 700) #原点在左上角
+        self.w.setGeometry(450, 700, 980, 700)  # 原点在左上角
         self.w.show()
 
         # create the background grids
@@ -81,26 +86,22 @@ class Visualizer(object):
         self.skeleton_parents = common.skeleton_parents
         self.skeletons_3d = skeletons_3d
 
-
         for j, j_parent in enumerate(self.skeleton_parents):
             if j_parent == -1:
                 continue
             x = np.array([pos[j, 0], pos[j_parent, 0]]) * 10
             y = np.array([pos[j, 1], pos[j_parent, 1]]) * 10
             z = np.array([pos[j, 2], pos[j_parent, 2]]) * 10 - 10
-            pos_total = np.vstack([x,y,z]).transpose()
-            self.traces[j] = gl.GLLinePlotItem(pos=pos_total, color=pg.glColor((j, 10)), width=6,  antialias=True)
+            pos_total = np.vstack([x, y, z]).transpose()
+            self.traces[j] = gl.GLLinePlotItem(pos=pos_total, color=pg.glColor((j, 10)), width=6, antialias=True)
             self.w.addItem(self.traces[j])
-
 
     def start(self):
         if (sys.flags.interactive != 1) or not hasattr(QtCore, 'PYQT_VERSION'):
             QtGui.QApplication.instance().exec_()
 
-
     def set_plotdata(self, name, points, color, width):
         self.traces[name].setData(pos=points, color=color, width=width)
-
 
     def update(self):
         time.sleep(0.03)
@@ -116,12 +117,11 @@ class Visualizer(object):
             x = np.array([pos[j, 0], pos[j_parent, 0]]) * 10
             y = np.array([pos[j, 1], pos[j_parent, 1]]) * 10
             z = np.array([pos[j, 2], pos[j_parent, 2]]) * 10 - 10
-            pos_total = np.vstack([x,y,z]).transpose()
+            pos_total = np.vstack([x, y, z]).transpose()
             self.set_plotdata(
                 name=j, points=pos_total,
                 color=pg.glColor((j, 10)),
                 width=6)
-
 
     def animation(self):
         timer = QtCore.QTimer()
@@ -129,12 +129,14 @@ class Visualizer(object):
         timer.start(1)
         self.start()
 
+
 def main(VideoName):
     print(VideoName)
     joint3D = VideoPoseJoints(VideoName)
     v = Visualizer(joint3D)
     v.animation()
     cv2.destroyAllWindows()
+
 
 if __name__ == '__main__':
     parser = ArgumentParser()

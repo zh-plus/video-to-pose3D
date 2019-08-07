@@ -1,4 +1,5 @@
 import argparse
+
 import torch
 
 parser = argparse.ArgumentParser(description='PyTorch AlphaPose Training')
@@ -44,7 +45,6 @@ parser.add_argument('--crit', default='MSE', type=str,
                     help='Criterion type')
 parser.add_argument('--optMethod', default='rmsprop', type=str,
                     help='Optimization method: rmsprop | sgd | nag | adadelta')
-
 
 "----------------------------- Training options -----------------------------"
 parser.add_argument('--nEpochs', default=50, type=int,
@@ -92,7 +92,6 @@ parser.add_argument('--backend', dest='backend', type=str, default='gloo',
                     help='backend for distributed training')
 parser.add_argument('--port', dest='port',
                     help='port of server')
-
 
 opt = parser.parse_args()
 if opt.Continue:

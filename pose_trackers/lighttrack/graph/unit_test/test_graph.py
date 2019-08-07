@@ -6,9 +6,12 @@
     Unit test for graph.
 '''
 
-import sys, os
+import os
+import sys
+
 sys.path.append(os.path.abspath("../utils/"))
 from graph import *
+
 
 def test_normalize_diagraph():
     num_node = 15

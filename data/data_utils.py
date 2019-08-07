@@ -5,8 +5,8 @@
 # LICENSE file in the root directory of this source tree.
 #
 
-import numpy as np
 import h5py
+import numpy as np
 
 mpii_metadata = {
     'layout_name': 'mpii',
@@ -53,6 +53,7 @@ humaneva20_metadata = {
     ]
 }
 
+
 def suggest_metadata(name):
     names = []
     for metadata in [mpii_metadata, coco_metadata, h36m_metadata, humaneva15_metadata, humaneva20_metadata]:
@@ -60,6 +61,7 @@ def suggest_metadata(name):
             return metadata
         names.append(metadata['layout_name'])
     raise KeyError('Cannot infer keypoint layout from name "{}". Tried {}.'.format(name, names))
+
 
 def import_detectron_poses(path):
     # Latin1 encoding because Detectron runs on Python 2.7
@@ -79,7 +81,8 @@ def import_detectron_poses(path):
         results.append(keypoints)
     results = np.array(results)
     #  return results[:, :, 4:6] # Soft-argmax
-    return results[:, :, [0, 1, 3]] # Argmax + score
+    return results[:, :, [0, 1, 3]]  # Argmax + score
+
 
 def my_pose(path):
     data = np.load(path, encoding='latin1')
@@ -95,6 +98,7 @@ def import_sh_poses(path):
     with h5py.File(path) as hf:
         positions = hf['poses'].value
     return positions.astype('float32')
+
 
 def suggest_pose_importer(name):
     if 'detectron' in name:

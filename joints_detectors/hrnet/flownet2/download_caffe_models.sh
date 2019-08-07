@@ -10,4 +10,3 @@ RUN pip install http://download.pytorch.org/whl/cu80/torch-0.2.0.post3-cp27-cp27
 RUN pip install cffi ipython' Dockerfile
 
 sudo make
-

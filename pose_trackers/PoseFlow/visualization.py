@@ -1,13 +1,12 @@
-import os
 import argparse
 import json
-import numpy as np
-import matplotlib.pyplot as plt
-import PoseFlow.utils
+import os
+from multiprocessing import Pool
 
+import matplotlib.pyplot as plt
+import numpy as np
 from PIL import Image
 from tqdm import tqdm
-from multiprocessing import Pool
 
 
 def viz_one_pose(tracked_item, imgdir, visdir, cmap):

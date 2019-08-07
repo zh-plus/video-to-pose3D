@@ -1,11 +1,13 @@
 import os
 import os.path as osp
 import sys
+
 import numpy as np
 
-#dataset_name = "COCO"
-#dataset_name = "posetrack"
+# dataset_name = "COCO"
+# dataset_name = "posetrack"
 dataset_name = "posetrack+COCO"
+
 
 class Config:
     username = 'default'
@@ -51,7 +53,7 @@ class Config:
 
     gpu_ids = '0,1,2,3'
     nr_gpus = 4
-    continue_train = True  #False
+    continue_train = True  # False
 
     def get_lr(self, itr):
         lr = self.lr * self.lr_gamma ** (itr // self.step_size)
@@ -68,21 +70,21 @@ class Config:
     init_model = osp.join(root_dir, 'data', 'imagenet_weights', 'res152.ckpt')
 
     if dataset_name == "COCO":
-        #{0-nose    1-Leye    2-Reye    3-Lear    4Rear    5-Lsho    6-Rsho    7-Lelb    8-Relb    9-Lwri    10-Rwri    11-Lhip    12-Rhip    13-Lkne    14-Rkne    15-Lank    16-Rank}　
+        # {0-nose    1-Leye    2-Reye    3-Lear    4Rear    5-Lsho    6-Rsho    7-Lelb    8-Relb    9-Lwri    10-Rwri    11-Lhip    12-Rhip    13-Lkne    14-Rkne    15-Lank    16-Rank}　
         nr_skeleton = 17
         img_path = os.path.join(root_dir, 'data', 'COCO', 'MSCOCO', 'images')
         symmetry = [(1, 2), (3, 4), (5, 6), (7, 8), (9, 10), (11, 12), (13, 14), (15, 16)]
 
-        pixel_means = np.array([[[102.9801, 115.9465, 122.7717]]]) # BGR
+        pixel_means = np.array([[[102.9801, 115.9465, 122.7717]]])  # BGR
         pixel_norm = True
 
     elif dataset_name == "posetrack" or dataset_name == "posetrack+COCO":
-        #{0-Rank    1-Rkne    2-Rhip    3-Lhip    4-Lkne    5-Lank    6-Rwri    7-Relb    8-Rsho    9-Lsho   10-Lelb    11-Lwri    12-neck  13-nose　14-TopHead}
+        # {0-Rank    1-Rkne    2-Rhip    3-Lhip    4-Lkne    5-Lank    6-Rwri    7-Relb    8-Rsho    9-Lsho   10-Lelb    11-Lwri    12-neck  13-nose　14-TopHead}
         nr_skeleton = 15
         img_path = os.path.join(root_dir, 'data', 'Data_2017', 'posetrack_data', 'images')
         symmetry = [(0, 5), (1, 4), (2, 3), (6, 11), (7, 10), (8, 9)]
 
-        pixel_means = np.array([[[102.9801, 115.9465, 122.7717]]]) # BGR
+        pixel_means = np.array([[[102.9801, 115.9465, 122.7717]]])  # BGR
         pixel_norm = True
 
     imgExtXBorder = 0.1
@@ -91,11 +93,11 @@ class Config:
 
     use_seg = False
 
-    data_aug = True # has to be true
+    data_aug = True  # has to be true
     nr_aug = 4
 
-    data_shape = (384, 288) #height, width
-    output_shape = (96, 72) #height, width
+    data_shape = (384, 288)  # height, width
+    output_shape = (96, 72)  # height, width
     gaussain_kernel = (13, 13)
 
     gk15 = (23, 23)
@@ -103,10 +105,12 @@ class Config:
     gk9 = (13, 13)
     gk7 = (9, 9)
 
+
 cfg = Config()
 
 sys.path.insert(0, osp.join(cfg.root_dir, 'lib'))
 from tfflat.utils import add_pypath, make_link, make_dir
+
 add_pypath(osp.join(cfg.root_dir, 'data'))
 add_pypath(osp.join(cfg.root_dir, 'data', 'COCO'))
 

@@ -4,15 +4,18 @@
     Dec, 2016
 '''
 
-import sys, os
+import os
+import sys
+
 sys.path.append(os.path.abspath("../utility/"))
 from utils_io_file import *
 from test_utils_io_folder import create_dummy_files_in_folder
 
+
 def test_validate_file_format():
     temp_folder = '../temp_folder'
-    create_dummy_files_in_folder(temp_folder, file_format = 'txt')
-    create_dummy_files_in_folder(temp_folder, file_format = 'png')
+    create_dummy_files_in_folder(temp_folder, file_format='txt')
+    create_dummy_files_in_folder(temp_folder, file_format='png')
     txt_file_path = os.path.join(temp_folder, '1.txt')
     png_file_path = os.path.join(temp_folder, '1.png')
     allowed_format = ['txt', 'jpg']
@@ -28,7 +31,7 @@ def test_validate_file_format():
 
 def test_video_to_images():
     video_file_path = "/Users/guanghan.ning/Desktop/working/douyin_videos/5.MP4"
-    expecting_true = video_to_images(video_file_path, output_img_folder_path = None)
+    expecting_true = video_to_images(video_file_path, output_img_folder_path=None)
     if expecting_true is True:
         return True
     else:
@@ -38,8 +41,8 @@ def test_video_to_images():
 def main():
     print("Testing: utils_io_file")
 
-    #passed = test_validate_file_format()
-    #if passed is False:
+    # passed = test_validate_file_format()
+    # if passed is False:
     #    print("\t test_validate_file_format failed")
 
     passed = test_video_to_images()

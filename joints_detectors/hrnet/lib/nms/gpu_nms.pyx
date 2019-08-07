@@ -8,8 +8,9 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
+cimport
+numpy as np
 import numpy as np
-cimport numpy as np
 
 assert sizeof(int) == sizeof(np.int32_t)
 
