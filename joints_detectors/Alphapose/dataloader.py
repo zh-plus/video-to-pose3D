@@ -243,7 +243,7 @@ class VideoLoader:
 
             img.append(img_k)
             orig_img.append(orig_img_k)
-            im_name.append(str(i) + '.jpg')
+            im_name.append(f'image{str(i).zfill(len(str(self.datalen)) + 1)}.jpg')
             im_dim_list.append(im_dim_list_k)
 
             with torch.no_grad():

@@ -70,7 +70,7 @@ def main(args):
 
         with open(notrack_json) as f:
             results = json.load(f)
-            results = remove_irrelevant(results, 1)
+            # results = remove_irrelevant(results, 1)
             for i in range(len(results)):
                 imgpath = results[i]['image_id']
                 if last_image_name != imgpath:

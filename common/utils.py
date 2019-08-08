@@ -129,9 +129,12 @@ def split_video(video_path):
     video_name = os.path.basename(video_path)
     video_name = video_name[:video_name.rfind('.')]
 
-    save_path = pathlib.Path(f'{output_dir}/image/{video_name}')
-    shutil.rmtree(str(save_path), ignore_errors=True)
-    save_path.mkdir(parents=True, exist_ok=True)
+    save_folder = pathlib.Path(f'{output_dir}/image/{video_name}')
+    shutil.rmtree(str(save_folder), ignore_errors=True)
+    save_folder.mkdir(parents=True, exist_ok=True)
+
+    total_frames = stream.get(cv2.CAP_PROP_FRAME_COUNT)
+    length = len(str(total_frames)) + 1
 
     i = 0
     while True:
@@ -141,7 +144,8 @@ def split_video(video_path):
             print(f'Split totally {i + 1} images from video.')
             break
 
-        cv2.imwrite(f'{output_dir}/image/{video_name}/{i}.jpg', frame)
+        save_path = f'{output_dir}/image/{video_name}/image{str(i).zfill(length)}.jpg'
+        cv2.imwrite(save_path, frame)
 
         i += 1
 
