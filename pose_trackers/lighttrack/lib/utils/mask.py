@@ -1,7 +1,7 @@
-import cv2
+import json
 import numpy as np
+import cv2
 from pycocotools import mask as COCOmask
-
 
 def showMask(img_obj):
     img = cv2.imread(img_obj['fpath'])
@@ -23,12 +23,11 @@ def showMask(img_obj):
     cv2.imshow("Mask", img)
     cv2.waitKey(0)
 
-
 def get_seg(height, width, seg_ann):
     label = np.zeros((height, width, 1))
     if type(seg_ann) == list or type(seg_ann) == np.ndarray:
         for s in seg_ann:
-            poly = np.array(s, np.int).reshape(len(s) // 2, 2)
+            poly = np.array(s, np.int).reshape(len(s)//2, 2)
             cv2.fillPoly(label, [poly], 1)
     else:
         if type(seg_ann['counts']) == list:

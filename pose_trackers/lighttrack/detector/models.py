@@ -6,8 +6,8 @@ import numpy as np
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from detector.detector_utils import build_targets
-from detector.parse_config import *
+from lighttrack.detector.detector_utils import build_targets
+from lighttrack.detector.parse_config import *
 from torch.autograd import Variable
 
 

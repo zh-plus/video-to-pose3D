@@ -2,9 +2,10 @@
 from __future__ import division
 
 import os
+from PIL import Image
 
-from detector.detector_utils import *
-from detector.models import *
+from lighttrack.detector.detector_utils import *
+from lighttrack.detector.models import *
 
 os.environ['CUDA_VISIBLE_DEVICES'] = '0'
 import argparse

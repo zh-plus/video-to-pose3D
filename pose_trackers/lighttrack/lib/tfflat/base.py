@@ -1,24 +1,21 @@
-import abc
-import glob
-import os
-import os.path as osp
-from collections import OrderedDict as dict
-
-import numpy as np
-import setproctitle
 import tensorflow as tf
 import tensorflow.contrib.slim as slim
+import numpy as np
+from collections import OrderedDict as dict
+import os
+import os.path as osp
+import glob
+import setproctitle
+import abc
 
-from .logger import colorlogger
 from .net_utils import sum_gradients, aggregate_batch, get_optimizer, get_tower_summary_dict
 from .saver import load_model, Saver
 from .timer import Timer
+from .logger import colorlogger
 from .utils import approx_equal
-
 
 class ModelDesc(object):
     __metaclass__ = abc.ABCMeta
-
     def __init__(self):
         self._loss = None
         self._inputs = []
@@ -86,7 +83,6 @@ class ModelDesc(object):
     def make_data(self):
         pass
 
-
 class Base(object):
     __metaclass__ = abc.ABCMeta
     """
@@ -143,7 +139,7 @@ class Base(object):
             self.graph_ops = self._make_graph()
             if not isinstance(self.graph_ops, list) and not isinstance(self.graph_ops, tuple):
                 self.graph_ops = [self.graph_ops]
-        self.summary_dict.update(get_tower_summary_dict(self.net._tower_summary))
+        self.summary_dict.update( get_tower_summary_dict(self.net._tower_summary) )
 
     def load_weights(self, model=None):
         if model == 'last_epoch':
@@ -164,7 +160,7 @@ class Base(object):
             self.logger.info('Initialized model weights from {} ...'.format(model))
             load_model(self.sess, model)
             if model.split('/')[-1].startswith('snapshot_'):
-                self.cur_epoch = int(model[model.find('snapshot_') + 9:model.find('.ckpt')])
+                self.cur_epoch = int(model[model.find('snapshot_')+9:model.find('.ckpt')])
                 self.logger.info('Current epoch is %d.' % self.cur_epoch)
         else:
             self.logger.critical('Load nothing. There is no model in path {}.'.format(model))
@@ -182,7 +178,6 @@ class Base(object):
                 else:
                     feed_dict[inp] = blobs[i].reshape(*inp_shape)
         return feed_dict
-
 
 class Trainer(Base):
     def __init__(self, net, cfg, data_iter=None):
@@ -226,7 +221,7 @@ class Trainer(Base):
                                     loss = self.net.get_loss(include_wd=True)
                                 else:
                                     loss = self.net.get_loss()
-                                self._input_list.append(self.net.get_inputs())
+                                self._input_list.append( self.net.get_inputs() )
 
                         tf.get_variable_scope().reuse_variables()
 
@@ -288,11 +283,11 @@ class Trainer(Base):
 
         self.logger.info('Start training ...')
         start_itr = self.cur_epoch * self.cfg.epoch_size + 1
-        nr_itrs = self.cfg.nr_gpus * self.cfg.batch_size
+        nr_itrs = self.cfg.nr_gpus*self.cfg.batch_size
         for itr in range(start_itr, self.cfg.max_itr + nr_itrs, nr_itrs):
             self.global_timer.tic()
 
-            itrs = np.arange(itr, itr + nr_itrs)
+            itrs = np.arange(itr, itr+nr_itrs)
             self.cur_epoch = itrs[-1] // self.cfg.epoch_size
 
             setproctitle.setproctitle('train ' + self.cfg.proj_name + ' epoch:' + str(self.cur_epoch))
@@ -327,7 +322,7 @@ class Trainer(Base):
                 ' '.join(map(lambda x: '%s: %.4f' % (x[0], x[1]), iter_summary.items())),
             ]
 
-            # TODO(display stall?)
+            #TODO(display stall?)
             if np.any(itrs % (self.cfg.display) == 0):
                 self.logger.info(' '.join(screen))
 
@@ -335,7 +330,6 @@ class Trainer(Base):
                 train_saver.save_model(self.cur_epoch)
 
             self.global_timer.toc()
-
 
 class Tester(Base):
     def __init__(self, net, cfg, data_iter=None):
@@ -367,7 +361,7 @@ class Tester(Base):
                     left_batches = total_batches - len(batch_data[i])
                     if left_batches > 0:
                         batch_data[i] = np.append(batch_data[i], np.zeros((left_batches, *batch_data[i].shape[1:])), axis=0)
-                        # self.logger.warning("Fill some blanks to fit batch_size which wastes %d%% computation" % (
+                        #self.logger.warning("Fill some blanks to fit batch_size which wastes %d%% computation" % (
                         #    left_batches * 100. / total_batches))
                 if batch_size > self.cfg.batch_size:
                     self.logger.warning("Current batch_size %d is larger then config batch_size %d." % (batch_size, self.cfg.batch_size))
@@ -377,10 +371,10 @@ class Tester(Base):
 
             for j, inputs in enumerate(self._input_list):
                 for i, inp in enumerate(inputs):
-                    feed_dict[inp] = batch_data[i][j * batch_size: (j + 1) * batch_size]
+                    feed_dict[ inp ] = batch_data[i][j * batch_size: (j+1) * batch_size]
 
-            # @TODO(delete)
-            assert (j + 1) * batch_size == len(batch_data[0]), 'check batch'
+            #@TODO(delete)
+            assert (j+1) * batch_size == len(batch_data[0]), 'check batch'
         return feed_dict, batch_size
 
     def _make_graph(self):

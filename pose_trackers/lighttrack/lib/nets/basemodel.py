@@ -1,21 +1,17 @@
-import os
-import sys
-
 import tensorflow as tf
 import tensorflow.contrib.slim as slim
-from tensorflow.contrib.layers.python.layers import regularizers, \
-    initializers, layers
+from . import resnet_v1, resnet_utils
 from tensorflow.contrib.slim import arg_scope
 from tensorflow.python.framework import ops
 from tensorflow.python.ops import nn_ops
+from tensorflow.contrib.layers.python.layers import regularizers, \
+    initializers, layers
 
-from . import resnet_v1, resnet_utils
-
+import sys, os
 cur_dir = os.path.dirname(os.path.abspath(__file__))
 root_dir = os.path.join(cur_dir, '..', '..')
 sys.path.insert(0, os.path.join(root_dir, 'HPE'))
 from config import cfg
-
 
 def resnet_arg_scope(bn_is_training,
                      bn_trainable,
@@ -44,7 +40,6 @@ def resnet_arg_scope(bn_is_training,
         with arg_scope([layers.batch_norm], **batch_norm_params) as arg_sc:
             return arg_sc
 
-
 def resnet50(image, bn_is_training, bn_trainable):
     bottleneck = resnet_v1.bottleneck
     blocks = [
@@ -64,7 +59,7 @@ def resnet50(image, bn_is_training, bn_trainable):
             net = tf.pad(net, [[0, 0], [1, 1], [1, 1], [0, 0]])
             net = slim.max_pool2d(
                 net, [3, 3], stride=2, padding='VALID', scope='pool1')
-        net, _ = resnet_v1.resnet_v1(  # trainable ?????
+        net, _ = resnet_v1.resnet_v1(                                  # trainable ?????
             net, blocks[0:1],
             global_pool=False, include_root_block=False,
             scope='resnet_v1_50')
@@ -88,7 +83,6 @@ def resnet50(image, bn_is_training, bn_trainable):
     resnet_features = [net, net2, net3, net4]
     return resnet_features
 
-
 def resnet101(image, bn_is_training, bn_trainable):
     bottleneck = resnet_v1.bottleneck
     blocks = [
@@ -108,7 +102,7 @@ def resnet101(image, bn_is_training, bn_trainable):
             net = tf.pad(net, [[0, 0], [1, 1], [1, 1], [0, 0]])
             net = slim.max_pool2d(
                 net, [3, 3], stride=2, padding='VALID', scope='pool1')
-        net, _ = resnet_v1.resnet_v1(  # trainable ?????
+        net, _ = resnet_v1.resnet_v1(                                  # trainable ?????
             net, blocks[0:1],
             global_pool=False, include_root_block=False,
             scope='resnet_v1_101')
@@ -149,11 +143,11 @@ def resnet152(inp, bn_is_training, bn_trainable):
     with slim.arg_scope(resnet_arg_scope(bn_is_training=bn_is_training, bn_trainable=bn_trainable)):
         with tf.variable_scope('resnet_v1_152', 'resnet_v1_152'):
             net = resnet_utils.conv2d_same(
-                tf.concat(inp, axis=3), 64, 7, stride=2, scope='conv1')
+                    tf.concat(inp,axis=3), 64, 7, stride=2, scope='conv1')
             net = tf.pad(net, [[0, 0], [1, 1], [1, 1], [0, 0]])
             net = slim.max_pool2d(
                 net, [3, 3], stride=2, padding='VALID', scope='pool1')
-        net, _ = resnet_v1.resnet_v1(  # trainable ?????
+        net, _ = resnet_v1.resnet_v1(                                  # trainable ?????
             net, blocks[0:1],
             global_pool=False, include_root_block=False,
             scope='resnet_v1_152')

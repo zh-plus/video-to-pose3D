@@ -1,13 +1,16 @@
 # This file implements the nms operator used in network
-import numpy as np
-from lib_kernel.lib_nms.gpu_nms import gpu_nms
+import megbrain as mgb
 from megbrain.craniotome import CraniotomeBase
-from megskull.opr.all import NonTrainableMLPOperatorNodeBase
+from megbrain.craniotome import make_opr
+from megskull.opr.all import MGBOprForwarderBase, SingleCNOperatorNodeBase, NonTrainableMLPOperatorNodeBase
+import numpy as np
+from IPython import embed
 
+from lib_kernel.lib_nms.gpu_nms import gpu_nms
 
 class NMSKeepCran(CraniotomeBase):
     __nr_inputs__ = 1
-    __nr_outputs__ = 1
+    __nr_outputs__= 1
     __is_dynamic_output_shape__ = True
 
     def setup(self, iou_threshold):
@@ -25,7 +28,6 @@ class NMSKeepCran(CraniotomeBase):
     def init_output_dtype(self, input_dtypes):
         return [np.int32]
 
-
 class NMSKeep(NonTrainableMLPOperatorNodeBase):
 
     def __init__(self, name, box, iou_threshold):
@@ -34,5 +36,5 @@ class NMSKeep(NonTrainableMLPOperatorNodeBase):
 
     def _init_output_mgbvar(self, env):
         var_box = env.get_mgbvar(self._var_input)
-        keep = NMSKeepCran.make(var_box, iou_threshold=self._iou_threshold)
+        keep = NMSKeepCran.make(var_box, iou_threshold = self._iou_threshold)
         env.set_mgbvar(self._var_output, keep)

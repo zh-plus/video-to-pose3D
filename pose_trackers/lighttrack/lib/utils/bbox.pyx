@@ -5,12 +5,9 @@
 # Written by Sergey Karayev
 # --------------------------------------------------------
 
+cimport cython
 import numpy as np
 cimport numpy as np
-
-cimport
-numpy as np
-import numpy as np
 
 DTYPE = np.float
 ctypedef np.float_t DTYPE_t
@@ -35,18 +32,18 @@ def bbox_overlaps_float(
     cdef unsigned int k, n
     for k in range(K):
         box_area = (
-                (query_boxes[k, 2] - query_boxes[k, 0]) *
-                (query_boxes[k, 3] - query_boxes[k, 1])
+            (query_boxes[k, 2] - query_boxes[k, 0]) *
+            (query_boxes[k, 3] - query_boxes[k, 1])
         )
         for n in range(N):
             iw = (
-                    min(boxes[n, 2], query_boxes[k, 2]) -
-                    max(boxes[n, 0], query_boxes[k, 0])
+                min(boxes[n, 2], query_boxes[k, 2]) -
+                max(boxes[n, 0], query_boxes[k, 0])
             )
             if iw > 0:
                 ih = (
-                        min(boxes[n, 3], query_boxes[k, 3]) -
-                        max(boxes[n, 1], query_boxes[k, 1])
+                    min(boxes[n, 3], query_boxes[k, 3]) -
+                    max(boxes[n, 1], query_boxes[k, 1])
                 )
                 if ih > 0:
                     ua = float(
@@ -86,18 +83,18 @@ def bbox_overlaps(
     cdef unsigned int k, n
     for k in range(K):
         box_area = (
-                (query_boxes[k, 2] - query_boxes[k, 0] + 1) *
-                (query_boxes[k, 3] - query_boxes[k, 1] + 1)
+            (query_boxes[k, 2] - query_boxes[k, 0] + 1) *
+            (query_boxes[k, 3] - query_boxes[k, 1] + 1)
         )
         for n in range(N):
             iw = (
-                    min(boxes[n, 2], query_boxes[k, 2]) -
-                    max(boxes[n, 0], query_boxes[k, 0]) + 1
+                min(boxes[n, 2], query_boxes[k, 2]) -
+                max(boxes[n, 0], query_boxes[k, 0]) + 1
             )
             if iw > 0:
                 ih = (
-                        min(boxes[n, 3], query_boxes[k, 3]) -
-                        max(boxes[n, 1], query_boxes[k, 1]) + 1
+                    min(boxes[n, 3], query_boxes[k, 3]) -
+                    max(boxes[n, 1], query_boxes[k, 1]) + 1
                 )
                 if ih > 0:
                     ua = float(
@@ -128,18 +125,18 @@ def bbox_overlaps_self(
     cdef unsigned int k, n
     for k in range(K):
         box_area = (
-                (query_boxes[k, 2] - query_boxes[k, 0] + 1) *
-                (query_boxes[k, 3] - query_boxes[k, 1] + 1)
+            (query_boxes[k, 2] - query_boxes[k, 0] + 1) *
+            (query_boxes[k, 3] - query_boxes[k, 1] + 1)
         )
         for n in range(N):
             iw = (
-                    min(boxes[n, 2], query_boxes[k, 2]) -
-                    max(boxes[n, 0], query_boxes[k, 0]) + 1
+                min(boxes[n, 2], query_boxes[k, 2]) -
+                max(boxes[n, 0], query_boxes[k, 0]) + 1
             )
             if iw > 0:
                 ih = (
-                        min(boxes[n, 3], query_boxes[k, 3]) -
-                        max(boxes[n, 1], query_boxes[k, 1]) + 1
+                    min(boxes[n, 3], query_boxes[k, 3]) -
+                    max(boxes[n, 1], query_boxes[k, 1]) + 1
                 )
                 if ih > 0:
                     ua = float(box_area)

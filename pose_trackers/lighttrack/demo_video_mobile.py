@@ -6,6 +6,8 @@
     Demo on videos using YOLOv3 detector and Mobilenetv1-Deconv.
 '''
 
+import time
+
 # import vision essentials
 from lighttrack.HPE.config import cfg
 # pose estimation utils
@@ -14,7 +16,7 @@ from lighttrack.HPE.dataset import Preprocessing
 from lighttrack.detector.detector_yolov3 import *
 # import GCN utils
 from lighttrack.graph.visualize_pose_matching import *
-from lighttrack.lib.lib_kernel.lib_nms.nms.cpu_nms import cpu_soft_nms
+# from lighttrack.lib.lib_kernel.lib_nms.nms.cpu_nms import cpu_soft_nms
 from lighttrack.lib.nms.gpu_nms import gpu_nms
 from lighttrack.lib.tfflat.base import Tester
 # import Network
@@ -87,7 +89,7 @@ def light_track(pose_estimator,
         print("Current tracking: [image_id:{}]".format(img_id))
 
         frame_cur = img_id
-        if (frame_cur == frame_prev):
+        if frame_cur == frame_prev:
             frame_prev -= 1
 
         ''' KEYFRAME: loading results from other modules '''
@@ -343,7 +345,7 @@ def light_track(pose_estimator,
 
 
 def get_track_id_SGCN(bbox_cur_frame, bbox_list_prev_frame, keypoints_cur_frame, keypoints_list_prev_frame):
-    assert (len(bbox_list_prev_frame) == len(keypoints_list_prev_frame))
+    assert len(bbox_list_prev_frame) == len(keypoints_list_prev_frame)
 
     min_index = None
     min_matching_score = sys.maxsize
