@@ -13,7 +13,7 @@ main_path = os.path.dirname(os.path.realpath(__file__))
 sys.path.append(main_path)
 
 from opt import opt
-from dataloader import VideoLoader, DetectionLoader, DetectionProcessor, DataWriter, Mscoco
+from dataloader import VideoLoader, DetectionLoader, DetectionProcessor, DataWriter, Mscoco, ImageLoader
 from SPPE.src.main_fast_inference import *
 from tqdm import tqdm
 from fn import getTime
@@ -22,7 +22,7 @@ from pPose_nms import write_json
 args = opt
 args.dataset = 'coco'
 args.fast_inference = False
-args.save_img = True
+args.save_img = False
 if not args.sp:
     torch.multiprocessing.set_start_method('forkserver', force=True)
     torch.multiprocessing.set_sharing_strategy('file_system')
@@ -37,14 +37,40 @@ def image_interface(model, image):
     pass
 
 
-def handle_video(videofile):
-    args.video = videofile
-    video_name = os.path.basename(args.video).split('.')[0]
+def handle_video(video_file=None, img_path=None):
+    # # Using image path
+    # args.inputpath = img_path
+    # video_name = os.path.basename(args.inputpath)
+    # args.outputpath = f'outputs/alpha_pose_{video_name}'
+    # if os.path.exists(args.outputpath):
+    #     shutil.rmtree(f'{args.outputpath}/vis', ignore_errors=True)
+    # else:
+    #     os.mkdir(args.outputpath)
+    #
+    # # if not len(video_file):
+    # #     raise IOError('Error: must contain --video')
+    #
+    # if len(img_path) and img_path != '/':
+    #     for root, dirs, files in os.walk(img_path):
+    #         im_names = files
+    # else:
+    #     raise IOError('Error: must contain either --indir/--list')
+    #
+    # # Load input images
+    # data_loader = ImageLoader(im_names, batchSize=args.detbatch, format='yolo').start()
+    # print(f'Totally {data_loader.datalen} images')
+
+    args.video = video_file
+    video_name = os.path.basename(args.inputpath)
+
     args.outputpath = f'outputs/alpha_pose_{video_name}'
     if os.path.exists(args.outputpath):
         shutil.rmtree(f'{args.outputpath}/vis', ignore_errors=True)
     else:
         os.mkdir(args.outputpath)
+
+    videofile = args.video
+    mode = args.mode
 
     if not len(videofile):
         raise IOError('Error: must contain --video')
@@ -53,8 +79,7 @@ def handle_video(videofile):
     data_loader = VideoLoader(videofile, batchSize=args.detbatch).start()
     (fourcc, fps, frameSize) = data_loader.videoinfo()
 
-    print('the video is {} f/s, {} frames in total'.format(fps, data_loader.length()))
-
+    print('the video is {} f/s'.format(fps))
     # Load detection loader
     print('Loading YOLO model..')
     sys.stdout.flush()
@@ -78,8 +103,9 @@ def handle_video(videofile):
     }
 
     # Data writer
-    save_path = os.path.join(args.outputpath, 'AlphaPose_' + ntpath.basename(videofile).split('.')[0] + '.avi')
+    save_path = os.path.join(args.outputpath, 'AlphaPose_' + ntpath.basename(video_file).split('.')[0] + '.avi')
     writer = DataWriter(args.save_video, save_path, cv2.VideoWriter_fourcc(*'XVID'), fps, frameSize).start()
+    # writer = DataWriter(args.save_video).start()
 
     print('Start pose estimation...')
     im_names_desc = tqdm(range(data_loader.length()))
@@ -155,4 +181,4 @@ if __name__ == "__main__":
     os.chdir('../..')
     print(os.getcwd())
 
-    handle_video('outputs/kobe.mp4')
+    handle_video(img_path='outputs/image/kobe')

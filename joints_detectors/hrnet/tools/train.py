@@ -20,16 +20,16 @@ import torch.optim
 import torch.utils.data
 import torch.utils.data.distributed
 import torchvision.transforms as transforms
-from config import cfg
-from config import update_config
-from core.function import train
-from core.function import validate
-from core.loss import JointsMSELoss
+from ..lib.config import cfg
+from ..lib.config import update_config
+from ..lib.core.function import train
+from ..lib.core.function import validate
+from ..lib.core.loss import JointsMSELoss
 from tensorboardX import SummaryWriter
-from utils.utils import create_logger
-from utils.utils import get_model_summary
-from utils.utils import get_optimizer
-from utils.utils import save_checkpoint
+from ..lib.utils.utils import create_logger
+from ..lib.utils.utils import get_model_summary
+from ..lib.utils.utils import get_optimizer
+from ..lib.utils.utils import save_checkpoint
 
 
 def parse_args():

@@ -133,10 +133,10 @@ def split_video(video_path):
     shutil.rmtree(str(save_folder), ignore_errors=True)
     save_folder.mkdir(parents=True, exist_ok=True)
 
-    total_frames = stream.get(cv2.CAP_PROP_FRAME_COUNT)
+    total_frames = int(stream.get(cv2.CAP_PROP_FRAME_COUNT))
     length = len(str(total_frames)) + 1
 
-    i = 0
+    i = 1
     while True:
         grabbed, frame = stream.read()
 
@@ -144,10 +144,12 @@ def split_video(video_path):
             print(f'Split totally {i + 1} images from video.')
             break
 
-        save_path = f'{output_dir}/image/{video_name}/image{str(i).zfill(length)}.jpg'
+        save_path = f'{output_dir}/image/{video_name}/output{str(i).zfill(length)}.png'
         cv2.imwrite(save_path, frame)
 
         i += 1
+
+    return os.path.dirname(save_path)
 
 
 if __name__ == '__main__':

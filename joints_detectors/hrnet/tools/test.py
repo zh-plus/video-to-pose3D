@@ -9,31 +9,23 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-import ipdb;
-
-pdb = ipdb.set_trace
-
 import argparse
 import os
 import pprint
 
 import torch
-import torch.nn.parallel
 import torch.backends.cudnn as cudnn
+import torch.nn.parallel
 import torch.optim
 import torch.utils.data
 import torch.utils.data.distributed
 import torchvision.transforms as transforms
 
-from config import cfg
-from config import update_config
-from core.loss import JointsMSELoss
-from core.function import validate
-from utils.utils import create_logger
-
-import ipdb;
-
-pdb = ipdb.set_trace
+from ..lib.config import cfg
+from ..lib.config import update_config
+from ..lib.core.function import validate
+from ..lib.core.loss import JointsMSELoss
+from ..lib.utils.utils import create_logger
 
 
 def parse_args():

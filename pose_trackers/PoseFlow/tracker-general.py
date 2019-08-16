@@ -79,7 +79,7 @@ def main(args):
                 else:
                     results_forvis[imgpath].append({'keypoints': results[i]['keypoints'], 'scores': results[i]['score']})
                 last_image_name = imgpath
-        notrack_json = os.path.join(os.path.dirname(notrack_json), "alphapose-results-forvis.json")
+        notrack_json = os.path.join(os.path.dirname(notrack_json), "alphaposse-results-forvis.json")
         with open(notrack_json, 'w') as json_file:
             json_file.write(json.dumps(results_forvis))
 

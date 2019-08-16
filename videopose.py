@@ -81,6 +81,8 @@ def main(args):
 
     assert detector_2d, 'detector_2d should be in ({alpha, hr, open}_pose)'
 
+    # image_path = split_video(args.viz_video)
+
     # 2D kpts loads or generate
     if not args.input_npz:
         video_name = args.viz_video
@@ -145,10 +147,10 @@ def main(args):
 
     from common.visualization import render_animation_my
     render_animation_my(input_keypoints, anim_output,
-                        skeleton(), 25, args.viz_bitrate, np.array(70., dtype=np.float32), args.viz_output,
-                        limit=args.viz_limit, downsample=args.viz_downsample, size=args.viz_size,
-                        input_video_path=args.viz_video, viewport=(1000, 1002),
-                        input_video_skip=args.viz_skip)
+                     skeleton(), 25, args.viz_bitrate, np.array(70., dtype=np.float32), args.viz_output,
+                     limit=args.viz_limit, downsample=args.viz_downsample, size=args.viz_size,
+                     input_video_path=args.viz_video, viewport=(1000, 1002),
+                     input_video_skip=args.viz_skip)
 
     ckpt, time4 = ckpt_time(time3)
     # pdb()
@@ -157,17 +159,33 @@ def main(args):
     print('total spend {:2f} second'.format(ckpt))
 
 
-if __name__ == '__main__':
+def inference_video(video_path):
+    """
+    Do image -> 2d points -> 3d points to video.
+    :param video_path: relative to outputs
+    :return: None
+    """
     args = parse_args()
 
     args.detector_2d = 'alpha_pose'
-    video_name = 'actor2.mp4'
-    base_name = video_name[:video_name.rfind('.')]
-    args.viz_video = f'outputs/{video_name}'
-    # args.input_npz = 'outputs/dance.npz'
-    args.viz_output = f'outputs/{args.detector_2d}_{base_name}.mp4'
+    dir_name = os.path.dirname(video_path)
+    basename = os.path.basename(video_path)
+    video_name = basename[:basename.rfind('.')]
+    args.viz_video = video_path
+    args.viz_output = f'{dir_name}/{args.detector_2d}_{video_name}.gif'
 
     args.evaluate = 'pretrained_h36m_detectron_coco.bin'
 
-    with Timer('All process'):
+    with Timer(video_path):
         main(args)
+
+
+if __name__ == '__main__':
+    # video_folder = 'outputs/videos'
+    # root, dirs, files = next(os.walk(video_folder))
+    # video_paths = [os.path.join(video_folder, f) for f in files]
+    #
+    # for p in video_paths:
+    #     inference_video(p)
+
+    inference_video('outputs/kunkun_cut.mp4')
