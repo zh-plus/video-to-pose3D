@@ -2,7 +2,7 @@
 
 > Predict 3d human pose from video
 
-
+<p align="center"><img src="asset/kunkun_alphapose.gif" width="100%" alt="" /></p>
 
 ## Prerequisite
 
@@ -49,12 +49,6 @@
 ##### Multiple person video
 
 //TODO
-
-
-
-#### Result
-
-<p align="center"><img src="asset/kunkun_alphapose.gif" width="120%" alt="" /></p>
 
 
 ## Advanced
