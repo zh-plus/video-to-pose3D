@@ -1,20 +1,15 @@
 import os
 import time
 
-import torch.backends.cudnn as cudnn
-
 from common.arguments import parse_args
 from common.camera import *
 from common.generators import UnchunkedGenerator
 from common.loss import *
 from common.model import *
 from common.utils import Timer
-from joints_detectors.Alphapose.gene_npz import handle_video as alpha_pose
-from joints_detectors.hrnet.pose_estimation.video import generate_kpts as hr_pose
 
 # from joints_detectors.openpose.main import generate_kpts as open_pose
 
-cudnn.benchmark = False
 
 os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"  # see issue #152
 os.environ["CUDA_VISIBLE_DEVICES"] = "3"
@@ -22,12 +17,6 @@ os.environ["CUDA_VISIBLE_DEVICES"] = "3"
 path = os.path.split(os.path.realpath(__file__))[0]
 
 metadata = {'layout_name': 'coco', 'num_joints': 17, 'keypoints_symmetry': [[1, 3, 5, 7, 9, 11, 13, 15], [2, 4, 6, 8, 10, 12, 14, 16]]}
-
-detector_map = {
-    'alpha_pose': alpha_pose,
-    'hr_pose': hr_pose,
-    # 'open_pose': open_pose
-}
 
 
 # record time
@@ -39,6 +28,26 @@ def ckpt_time(ckpt=None):
 
 
 time0 = ckpt_time()
+
+
+def get_detector_2d(detector_name):
+    def get_alpha_pose():
+        from joints_detectors.Alphapose.gene_npz import handle_video as alpha_pose
+        return alpha_pose
+
+    def get_hr_pose():
+        from joints_detectors.hrnet.pose_estimation.video import generate_kpts as hr_pose
+        return hr_pose
+
+    detector_map = {
+        'alpha_pose': get_alpha_pose,
+        'hr_pose': get_hr_pose,
+        # 'open_pose': open_pose
+    }
+
+    assert detector_name in detector_map, f'2D detector: {detector_name} not implemented yet!'
+
+    return detector_map[detector_name]()
 
 
 class skeleton():
@@ -77,7 +86,7 @@ def evaluate(test_generator, model_pos, action=None, return_predictions=False):
 
 
 def main(args):
-    detector_2d = detector_map.get(args.detector_2d)
+    detector_2d = get_detector_2d(args.detector_2d)
 
     assert detector_2d, 'detector_2d should be in ({alpha, hr, open}_pose)'
 
@@ -95,7 +104,7 @@ def main(args):
     kps_left, kps_right = list(keypoints_symmetry[0]), list(keypoints_symmetry[1])
     joints_left, joints_right = list([4, 5, 6, 11, 12, 13]), list([1, 2, 3, 14, 15, 16])
 
-    # normlization keypoints  假设use the camera parameter
+    # normlization keypoints  Suppose using the camera parameter
     keypoints = normalize_screen_coordinates(keypoints[..., :2], w=1000, h=1002)
 
     model_pos = TemporalModel(17, 2, 17, filter_widths=[3, 3, 3, 3, 3], causal=args.causal, dropout=args.dropout, channels=args.channels,
@@ -147,15 +156,12 @@ def main(args):
 
     from common.visualization import render_animation_my
     render_animation_my(input_keypoints, anim_output,
-                     skeleton(), 25, args.viz_bitrate, np.array(70., dtype=np.float32), args.viz_output,
-                     limit=args.viz_limit, downsample=args.viz_downsample, size=args.viz_size,
-                     input_video_path=args.viz_video, viewport=(1000, 1002),
-                     input_video_skip=args.viz_skip)
+                        skeleton(), 25, args.viz_bitrate, np.array(70., dtype=np.float32), args.viz_output,
+                        limit=args.viz_limit, downsample=args.viz_downsample, size=args.viz_size,
+                        input_video_path=args.viz_video, viewport=(1000, 1002),
+                        input_video_skip=args.viz_skip)
 
     ckpt, time4 = ckpt_time(time3)
-    # pdb()
-    # openVideoCommand = "xdg-open " + args.viz_output
-    # os.system(openVideoCommand)
     print('total spend {:2f} second'.format(ckpt))
 
 
@@ -173,7 +179,7 @@ def inference_video(video_path):
     video_name = basename[:basename.rfind('.')]
     args.viz_video = video_path
     args.viz_output = f'{dir_name}/{args.detector_2d}_{video_name}.gif'
-    # args.viz_limit = 100
+    # args.viz_limit = 20
 
     args.evaluate = 'pretrained_h36m_detectron_coco.bin'
 
