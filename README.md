@@ -54,7 +54,7 @@
 
 #### Result
 
-<p align="center"><img src="images/kunkun_cut_out.gif" width="120%" alt="" /></p>
+<p align="center"><img src="asset/kunkun_alphapose.gif" width="120%" alt="" /></p>
 
 
 ## Advanced
