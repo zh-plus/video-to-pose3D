@@ -51,6 +51,10 @@
 //TODO
 
 
+##### Tips
+1. If you're using PyCharm, mark `./joints_detectors/Alphapose`, `./joints_detectors/hrnet` and `./pose_trackers` as source root.
+2. If your're trying to run in command line, add these paths mentioned above to the sys.path at the head of `./videopose.py`
+
 ## Advanced
 
 As this script is based on the [VedioPose3D](https://github.com/facebookresearch/VideoPose3D) provided by Facebook, and automated in the following way:
