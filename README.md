@@ -43,8 +43,8 @@
 
 ##### Single person video
 
-2. change the `video_path` in the `./videopose.py`
-3. Run it! You will find the rendered output video in the `./outputs` folder.
+1. change the `video_path` in the `./videopose.py`
+2. Run it! You will find the rendered output video in the `./outputs` folder.
 
 ##### Multiple person video
 
