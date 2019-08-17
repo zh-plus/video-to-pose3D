@@ -79,7 +79,6 @@ __pycache__/
 
 
 *.pyc
-checkpoint/
 .ipynb_checkpoints/
 *.gif
 *.jpg
