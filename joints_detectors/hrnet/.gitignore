@@ -88,7 +88,7 @@ lib/pycocotools/_mask.c
 lib/nms/cpu_nms.c
 
 output/*
-models/*
+models/**/*.pth
 log/*
 data/*
 external/
@@ -96,4 +96,3 @@ external/
 draws/
 plot/
 *.tar
-
