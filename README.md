@@ -10,10 +10,19 @@
    - Linux system
    - Python 3+ distribution
 2. Dependencies
-   - Pytorch > 0.4.0
-   - ffmpeg
-   - tqdm
-   - pillow
+   - **Packages**
+      - Pytorch > 0.4.0
+      - torchsample
+      - ffmpeg
+      - tqdm
+      - pillow
+      - scipy
+      - pandas
+      - h5py
+      - visdom
+      - nibabel
+      - opencv-python (install with pip)
+      - matplotlib
    - **2D Joint detectors**
      - Alphapose (Recommended)
        - Download **duc_se.pth** from ([Google Drive](https://drive.google.com/open?id=1OPORTWB2cwd5YTVBX-NE8fsauZJWsrtW) | [Baidu pan](https://pan.baidu.com/s/15jbRNKuslzm5wRSgUVytrA)),
