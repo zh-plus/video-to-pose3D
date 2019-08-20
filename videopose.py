@@ -165,15 +165,16 @@ def main(args):
     print('total spend {:2f} second'.format(ckpt))
 
 
-def inference_video(video_path):
+def inference_video(video_path, detector_2d):
     """
     Do image -> 2d points -> 3d points to video.
+    :param detector_2d: used 2d joints detector. Can be {alpha_pose, hr_pose}
     :param video_path: relative to outputs
     :return: None
     """
     args = parse_args()
 
-    args.detector_2d = 'alpha_pose'
+    args.detector_2d = detector_2d
     dir_name = os.path.dirname(video_path)
     basename = os.path.basename(video_path)
     video_name = basename[:basename.rfind('.')]
@@ -195,4 +196,4 @@ if __name__ == '__main__':
     # for p in video_paths:
     #     inference_video(p)
 
-    inference_video('outputs/actor2.mp4')
+    inference_video('outputs/actor2.mp4', 'hr_pose')

@@ -136,6 +136,9 @@ def generate_kpts(video_name, smooth=False):
             preds, maxvals = get_final_preds(
                 cfg, output.clone().cpu().numpy(), np.asarray(center), np.asarray(scale))
 
+            if len(preds) != 1:
+                print('here')
+
         if smooth:
             # smooth and fine-tune coordinates
             preds = smooth_filter(preds)

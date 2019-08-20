@@ -4,4 +4,7 @@
     <option name="languageLevel" value="ES6" />
   </component>
   <component name="ProjectRootManager" version="2" project-jdk-name="Remote Python 3.6.8 (sftp://vision@10.66.235.221:22/home/vision/anaconda3/envs/torch1_zh/bin/python)" project-jdk-type="Python SDK" />
+  <component name="PythonCompatibilityInspectionAdvertiser">
+    <option name="version" value="3" />
+  </component>
 </project>

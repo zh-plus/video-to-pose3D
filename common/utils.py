@@ -129,7 +129,7 @@ def split_video(video_path):
     video_name = os.path.basename(video_path)
     video_name = video_name[:video_name.rfind('.')]
 
-    save_folder = pathlib.Path(f'{output_dir}/image/{video_name}')
+    save_folder = pathlib.Path(f'{output_dir}/alpha_pose_{video_name}/split_image/')
     shutil.rmtree(str(save_folder), ignore_errors=True)
     save_folder.mkdir(parents=True, exist_ok=True)
 
@@ -144,12 +144,15 @@ def split_video(video_path):
             print(f'Split totally {i + 1} images from video.')
             break
 
-        save_path = f'{output_dir}/image/{video_name}/output{str(i).zfill(length)}.png'
+        save_path = f'{save_folder}/output{str(i).zfill(length)}.png'
         cv2.imwrite(save_path, frame)
 
         i += 1
 
-    return os.path.dirname(save_path)
+    saved_path = os.path.dirname(save_path)
+    print(f'Split images saved in {saved_path}')
+
+    return saved_path
 
 
 if __name__ == '__main__':

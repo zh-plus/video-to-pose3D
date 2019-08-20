@@ -203,7 +203,7 @@ def track(video_name):
     # 7. match threshold in Hungarian Matching
 
     # User specific parameters
-    args.imgdir = f'outputs/image/{video_name}'
+    args.imgdir = f'outputs/alpha_pose_{video_name}/split_image'
     args.result_dir = f'outputs/alpha_pose_{video_name}'
     args.in_json = f'{args.result_dir}/alphapose-results.json'
     args.out_json = f'{args.result_dir}/poseflow-results.json'

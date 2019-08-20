@@ -13,7 +13,7 @@ main_path = os.path.dirname(os.path.realpath(__file__))
 sys.path.append(main_path)
 
 from opt import opt
-from dataloader import VideoLoader, DetectionLoader, DetectionProcessor, DataWriter, Mscoco, ImageLoader
+from dataloader import ImageLoader, DetectionLoader, DetectionProcessor, DataWriter, Mscoco
 from SPPE.src.main_fast_inference import *
 from tqdm import tqdm
 from fn import getTime
@@ -37,49 +37,57 @@ def image_interface(model, image):
     pass
 
 
-def handle_video(video_file=None, img_path=None):
-    # # Using image path
-    # args.inputpath = img_path
-    # video_name = os.path.basename(args.inputpath)
-    # args.outputpath = f'outputs/alpha_pose_{video_name}'
-    # if os.path.exists(args.outputpath):
-    #     shutil.rmtree(f'{args.outputpath}/vis', ignore_errors=True)
-    # else:
-    #     os.mkdir(args.outputpath)
-    #
-    # # if not len(video_file):
-    # #     raise IOError('Error: must contain --video')
-    #
-    # if len(img_path) and img_path != '/':
-    #     for root, dirs, files in os.walk(img_path):
-    #         im_names = files
-    # else:
-    #     raise IOError('Error: must contain either --indir/--list')
-    #
-    # # Load input images
-    # data_loader = ImageLoader(im_names, batchSize=args.detbatch, format='yolo').start()
-    # print(f'Totally {data_loader.datalen} images')
-
+def handle_video(video_file=None):
+    # =========== common ===============
     args.video = video_file
-    video_name = os.path.basename(args.inputpath)
+    base_name = os.path.basename(args.video)
+    video_name = base_name[:base_name.rfind('.')]
+    # =========== end common ===============
 
+    img_path = f'outputs/alpha_pose_{video_name}/split_image/'
+
+    # =========== image ===============
+    args.inputpath = img_path
     args.outputpath = f'outputs/alpha_pose_{video_name}'
     if os.path.exists(args.outputpath):
         shutil.rmtree(f'{args.outputpath}/vis', ignore_errors=True)
     else:
         os.mkdir(args.outputpath)
 
-    videofile = args.video
-    mode = args.mode
+    # if not len(video_file):
+    #     raise IOError('Error: must contain --video')
 
-    if not len(videofile):
-        raise IOError('Error: must contain --video')
+    if len(img_path) and img_path != '/':
+        for root, dirs, files in os.walk(img_path):
+            im_names = sorted([f for f in files if 'png' in f or 'jpg' in f])
+    else:
+        raise IOError('Error: must contain either --indir/--list')
 
-    # Load input video
-    data_loader = VideoLoader(videofile, batchSize=args.detbatch).start()
-    (fourcc, fps, frameSize) = data_loader.videoinfo()
+    # Load input images
+    data_loader = ImageLoader(im_names, batchSize=args.detbatch, format='yolo').start()
+    print(f'Totally {data_loader.datalen} images')
+    # =========== end image ===============
 
-    print('the video is {} f/s'.format(fps))
+    # =========== video ===============
+    # args.outputpath = f'outputs/alpha_pose_{video_name}'
+    # if os.path.exists(args.outputpath):
+    #     shutil.rmtree(f'{args.outputpath}/vis', ignore_errors=True)
+    # else:
+    #     os.mkdir(args.outputpath)
+    #
+    # videofile = args.video
+    # mode = args.mode
+    #
+    # if not len(videofile):
+    #     raise IOError('Error: must contain --video')
+    #
+    # # Load input video
+    # data_loader = VideoLoader(videofile, batchSize=args.detbatch).start()
+    # (fourcc, fps, frameSize) = data_loader.videoinfo()
+    #
+    # print('the video is {} f/s'.format(fps))
+    # =========== end video ===============
+
     # Load detection loader
     print('Loading YOLO model..')
     sys.stdout.flush()
@@ -104,8 +112,8 @@ def handle_video(video_file=None, img_path=None):
 
     # Data writer
     save_path = os.path.join(args.outputpath, 'AlphaPose_' + ntpath.basename(video_file).split('.')[0] + '.avi')
-    writer = DataWriter(args.save_video, save_path, cv2.VideoWriter_fourcc(*'XVID'), fps, frameSize).start()
-    # writer = DataWriter(args.save_video).start()
+    # writer = DataWriter(args.save_video, save_path, cv2.VideoWriter_fourcc(*'XVID'), fps, frameSize).start()
+    writer = DataWriter(args.save_video).start()
 
     print('Start pose estimation...')
     im_names_desc = tqdm(range(data_loader.length()))
@@ -174,6 +182,7 @@ def handle_video(video_file=None, img_path=None):
     kpts = np.array(kpts).astype(np.float32)
     print('kpts npz save in ', name)
     np.savez_compressed(name, kpts=kpts)
+
     return kpts
 
 
@@ -181,4 +190,5 @@ if __name__ == "__main__":
     os.chdir('../..')
     print(os.getcwd())
 
-    handle_video(img_path='outputs/image/kobe')
+    # handle_video(img_path='outputs/image/kobe')
+    handle_video('outputs/kobe.mp4')
