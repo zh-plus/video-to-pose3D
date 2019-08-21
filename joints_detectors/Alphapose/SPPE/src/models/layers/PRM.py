@@ -1,9 +1,7 @@
-import math
-
 import torch.nn as nn
-
+from .util_models import ConcatTable, CaddTable, Identity
+import math
 from opt import opt
-from .util_models import ConcatTable, CaddTable
 
 
 class Residual(nn.Module):

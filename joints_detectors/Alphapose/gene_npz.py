@@ -1,5 +1,3 @@
-#  import ipdb;ipdb.set_trace()
-
 import ntpath
 import os
 import shutil
@@ -23,6 +21,7 @@ args = opt
 args.dataset = 'coco'
 args.fast_inference = False
 args.save_img = False
+args.sp = True
 if not args.sp:
     torch.multiprocessing.set_start_method('forkserver', force=True)
     torch.multiprocessing.set_sharing_strategy('file_system')
@@ -37,7 +36,7 @@ def image_interface(model, image):
     pass
 
 
-def handle_video(video_file=None):
+def handle_video(video_file):
     # =========== common ===============
     args.video = video_file
     base_name = os.path.basename(args.video)

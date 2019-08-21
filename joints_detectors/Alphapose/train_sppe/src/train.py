@@ -3,18 +3,18 @@
 # Written by Jiefeng Li (jeff.lee.sjtu@gmail.com)
 # -----------------------------------------------------
 
-import os
-
 import torch
 import torch.utils.data
-from models.FastPose import createModel
-from tensorboardX import SummaryWriter
-from tqdm import tqdm
-from utils.dataset import coco
-from utils.eval import DataLogger, accuracy
-from utils.img import flip_v, shuffleLR_v
-
+from .utils.dataset import coco
 from opt import opt
+from tqdm import tqdm
+from models.FastPose import createModel
+from .utils.eval import DataLogger, accuracy
+from .utils.img import flip, shuffleLR
+from .evaluation import prediction
+
+from tensorboardX import SummaryWriter
+import os
 
 
 def train(train_loader, m, criterion, optimizer, writer):
@@ -77,9 +77,8 @@ def valid(val_loader, m, criterion, optimizer, writer):
 
             loss = criterion(out.mul(setMask), labels)
 
-            flip_out = m(flip_v(inps, cuda=True))
-            flip_out = flip_v(shuffleLR_v(
-                flip_out, val_loader.dataset, cuda=True), cuda=True)
+            flip_out = m(flip(inps))
+            flip_out = flip(shuffleLR(flip_out, val_loader.dataset))
 
             out = (flip_out + out) / 2
 
@@ -108,6 +107,7 @@ def valid(val_loader, m, criterion, optimizer, writer):
 
 
 def main():
+
     # Model Initialize
     m = createModel().cuda()
     if opt.loadModel:
@@ -121,7 +121,6 @@ def main():
                 os.mkdir("../exp/{}/{}".format(opt.dataset, opt.expID))
     else:
         print('Create new model')
-        #  import pdb;pdb.set_trace()
         if not os.path.exists("../exp/{}/{}".format(opt.dataset, opt.expID)):
             try:
                 os.mkdir("../exp/{}/{}".format(opt.dataset, opt.expID))

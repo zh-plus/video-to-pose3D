@@ -1,18 +1,17 @@
 import os
+import h5py
 from functools import reduce
 
-import h5py
 import torch.utils.data as data
-
-from opt import opt
 from ..pose import generateSampleBox
+from opt import opt
 
 
 class Mpii(data.Dataset):
     def __init__(self, train=True, sigma=1,
                  scale_factor=0.25, rot_factor=30, label_type='Gaussian'):
-        self.img_folder = '../data/mpii/images'  # root image folders
-        self.is_train = train  # training set or test set
+        self.img_folder = '../data/mpii/images'    # root image folders
+        self.is_train = train           # training set or test set
         self.inputResH = 320
         self.inputResW = 256
         self.outputResH = 80
@@ -68,10 +67,10 @@ class Mpii(data.Dataset):
         label = []
         for i in range(opt.nStack):
             if i < 2:
-                # label.append(out_bigcircle.clone())
+                #label.append(out_bigcircle.clone())
                 label.append(out.clone())
             elif i < 4:
-                # label.append(out_smallcircle.clone())
+                #label.append(out_smallcircle.clone())
                 label.append(out.clone())
             else:
                 label.append(out.clone())

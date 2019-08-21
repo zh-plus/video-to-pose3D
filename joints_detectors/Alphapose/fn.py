@@ -143,6 +143,7 @@ def vis_frame(frame, im_res, format='coco'):
     frame: frame image
     im_res: im_res of predictions
     format: coco or mpii
+
     return rendered image
     '''
     if format == 'coco':
@@ -172,10 +173,8 @@ def vis_frame(frame, im_res, format='coco'):
         line_color = [PURPLE, BLUE, BLUE, RED, RED, BLUE, BLUE, RED, RED, PURPLE, PURPLE, RED, RED, BLUE, BLUE]
     else:
         raise NotImplementedError
-    try:
-        im_name = im_res['imgname'].split('/')[-1]
-    except:
-        im_name = 'img name unknown'
+
+    im_name = im_res['imgname'].split('/')[-1]
     img = frame
     height, width = img.shape[:2]
     img = cv2.resize(img, (int(width / 2), int(height / 2)))
@@ -185,6 +184,7 @@ def vis_frame(frame, im_res, format='coco'):
         kp_scores = human['kp_score']
         kp_preds = torch.cat((kp_preds, torch.unsqueeze((kp_preds[5, :] + kp_preds[6, :]) / 2, 0)))
         kp_scores = torch.cat((kp_scores, torch.unsqueeze((kp_scores[5, :] + kp_scores[6, :]) / 2, 0)))
+
         # Draw keypoints
         for n in range(kp_scores.shape[0]):
             if kp_scores[n] <= 0.05:
@@ -196,6 +196,12 @@ def vis_frame(frame, im_res, format='coco'):
             # Now create a mask of logo and create its inverse mask also
             transparency = max(0, min(1, kp_scores[n]))
             img = cv2.addWeighted(bg, transparency, img, 1 - transparency, 0)
+
+        # Draw proposal score on the head
+        middle_eye = (kp_preds[1] + kp_preds[2]) / 4
+        middle_cor = int(middle_eye[0]) - 10, int(middle_eye[1]) - 12
+        cv2.putText(img, f"{human['proposal_score'].item():.2f}", middle_cor, cv2.FONT_HERSHEY_SIMPLEX, 0.3, (0, 0, 255))
+
         # Draw limbs
         for i, (start_p, end_p) in enumerate(l_pair):
             if start_p in part_line and end_p in part_line:

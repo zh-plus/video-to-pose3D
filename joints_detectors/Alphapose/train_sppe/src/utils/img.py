@@ -3,12 +3,13 @@
 # Written by Jiefeng Li (jeff.lee.sjtu@gmail.com)
 # -----------------------------------------------------
 
-import cv2
 import numpy as np
-import scipy.misc
 import torch
+import scipy.misc
 import torch.nn.functional as F
-from torchsample.transforms import SpecialCrop, Pad
+import cv2
+from opt import opt
+
 
 RED = (0, 0, 255)
 GREEN = (0, 255, 0)
@@ -128,54 +129,87 @@ def transformBoxInvert(pt, ul, br, inpH, inpW, resH, resW):
 
 def cropBox(img, ul, br, resH, resW):
     ul = ul.int()
-    br = br.int()
-    lenH = max(br[1] - ul[1], (br[0] - ul[0]) * resH / resW)
+    br = (br - 1).int()
+    # br = br.int()
+    lenH = max((br[1] - ul[1]).item(), (br[0] - ul[0]).item() * resH / resW)
     lenW = lenH * resW / resH
     if img.dim() == 2:
         img = img[np.newaxis, :]
 
-    newDim = torch.IntTensor((img.size(0), int(lenH), int(lenW)))
-    newImg = img[:, ul[1]:, ul[0]:].clone()
-    # Crop and Padding
-    size = torch.IntTensor((int(br[1] - ul[1]), int(br[0] - ul[0])))
-    newImg = SpecialCrop(size, 1)(newImg)
-    newImg = Pad(newDim)(newImg)
-    # Resize to output
-    v_Img = torch.autograd.Variable(newImg)
-    v_Img = torch.unsqueeze(v_Img, 0)
-    # newImg = F.upsample_bilinear(v_Img, size=(int(resH), int(resW))).data[0]
-    if torch.__version__ == '0.4.0a0+32f3bf7' or torch.__version__ == '0.4.0':
-        newImg = F.upsample(v_Img, size=(int(resH), int(resW)),
-                            mode='bilinear', align_corners=True).data[0]
-    else:
-        newImg = F.interpolate(v_Img, size=(int(resH), int(resW)),
-                               mode='bilinear', align_corners=True).data[0]
-    return newImg
+    box_shape = [br[1] - ul[1], br[0] - ul[0]]
+    pad_size = [(lenH - box_shape[0]) // 2, (lenW - box_shape[1]) // 2]
+    # Padding Zeros
+    img[:, :ul[1], :], img[:, :, :ul[0]] = 0, 0
+    img[:, br[1] + 1:, :], img[:, :, br[0] + 1:] = 0, 0
+
+    src = np.zeros((3, 2), dtype=np.float32)
+    dst = np.zeros((3, 2), dtype=np.float32)
+
+    src[0, :] = np.array([ul[0] - pad_size[1], ul[1] - pad_size[0]], np.float32)
+    src[1, :] = np.array([br[0] + pad_size[1], br[1] + pad_size[0]], np.float32)
+    dst[0, :] = 0
+    dst[1, :] = np.array([resW - 1, resH - 1], np.float32)
+
+    src[2:, :] = get_3rd_point(src[0, :], src[1, :])
+    dst[2:, :] = get_3rd_point(dst[0, :], dst[1, :])
+
+    trans = cv2.getAffineTransform(np.float32(src), np.float32(dst))
+
+    dst_img = cv2.warpAffine(torch_to_im(img), trans,
+                             (resW, resH), flags=cv2.INTER_LINEAR)
+
+    return im_to_torch(torch.Tensor(dst_img))
 
 
-def flip_v(x, cuda=False):
-    x = flip(x.cpu().data)
-    if cuda:
-        x = x.cuda()
-    x = torch.autograd.Variable(x)
-    return x
+def cv_rotate(img, rot, resW, resH):
+
+    center = np.array((resW - 1, resH - 1)) / 2
+    rot_rad = np.pi * rot / 180
+
+    src_dir = get_dir([0, (resH - 1) * -0.5], rot_rad)
+    dst_dir = np.array([0, (resH - 1) * -0.5], np.float32)
+
+    src = np.zeros((3, 2), dtype=np.float32)
+    dst = np.zeros((3, 2), dtype=np.float32)
+
+    src[0, :] = center
+    src[1, :] = center + src_dir
+    dst[0, :] = [(resW - 1) * 0.5, (resH - 1) * 0.5]
+    dst[1, :] = np.array([(resW - 1) * 0.5, (resH - 1) * 0.5]) + dst_dir
+
+    src[2:, :] = get_3rd_point(src[0, :], src[1, :])
+    dst[2:, :] = get_3rd_point(dst[0, :], dst[1, :])
+
+    trans = cv2.getAffineTransform(np.float32(src), np.float32(dst))
+
+    dst_img = cv2.warpAffine(torch_to_im(img), trans,
+                             (resW, resH), flags=cv2.INTER_LINEAR)
+
+    return im_to_torch(torch.Tensor(dst_img))
 
 
 def flip(x):
     assert (x.dim() == 3 or x.dim() == 4)
-    # dim = x.dim() - 1
-    x = x.numpy().copy()
-    if x.ndim == 3:
-        x = np.transpose(np.fliplr(np.transpose(x, (0, 2, 1))), (0, 2, 1))
-    elif x.ndim == 4:
-        for i in range(x.shape[0]):
-            x[i] = np.transpose(
-                np.fliplr(np.transpose(x[i], (0, 2, 1))), (0, 2, 1))
-    # x = x.swapaxes(dim, 0)
-    # x = x[::-1, ...]
-    # x = x.swapaxes(0, dim)
+    if '0.4.1' in torch.__version__:
+        dim = x.dim() - 1
 
-    return torch.from_numpy(x.copy())
+        return x.flip(dims=(dim,))
+    else:
+        is_cuda = False
+        if x.is_cuda:
+            x = x.cpu()
+            is_cuda = True
+        x = x.numpy().copy()
+        if x.ndim == 3:
+            x = np.transpose(np.fliplr(np.transpose(x, (0, 2, 1))), (0, 2, 1))
+        elif x.ndim == 4:
+            for i in range(x.shape[0]):
+                x[i] = np.transpose(
+                    np.fliplr(np.transpose(x[i], (0, 2, 1))), (0, 2, 1))
+        x = torch.from_numpy(x.copy())
+        if is_cuda:
+            x = x.cuda()
+    return x
 
 
 def shuffleLR(x, dataset):
@@ -189,20 +223,12 @@ def shuffleLR(x, dataset):
             tmp = x[:, dim1].clone()
             x[:, dim1] = x[:, dim0].clone()
             x[:, dim0] = tmp.clone()
-            # x[:, dim0], x[:, dim1] = deepcopy((x[:, dim1], x[:, dim0]))
+            #x[:, dim0], x[:, dim1] = deepcopy((x[:, dim1], x[:, dim0]))
         else:
             tmp = x[dim1].clone()
             x[dim1] = x[dim0].clone()
             x[dim0] = tmp.clone()
-            # x[dim0], x[dim1] = deepcopy((x[dim1], x[dim0]))
-    return x
-
-
-def shuffleLR_v(x, dataset, cuda=False):
-    x = shuffleLR(x.cpu().data, dataset)
-    if cuda:
-        x = x.cuda()
-    x = torch.autograd.Variable(x)
+            #x[dim0], x[dim1] = deepcopy((x[dim1], x[dim0]))
     return x
 
 
@@ -252,8 +278,8 @@ def vis_frame(frame, im_res, format='coco'):
             part_line[n] = (cor_x, cor_y)
             cv2.circle(img, (cor_x, cor_y), 4, p_color[n], -1)
             # Now create a mask of logo and create its inverse mask also
-            # transparency = max(0, min(1, kp_scores[n]))
-            # img = cv2.addWeighted(bg, transparency, img, 1, 0)
+            #transparency = max(0, min(1, kp_scores[n]))
+            #img = cv2.addWeighted(bg, transparency, img, 1, 0)
         # Draw limbs
         for i, (start_p, end_p) in enumerate(l_pair):
             if start_p in part_line and end_p in part_line:
@@ -261,7 +287,22 @@ def vis_frame(frame, im_res, format='coco'):
                 end_xy = part_line[end_p]
                 cv2.line(img, start_xy, end_xy,
                          line_color[i], (0.5 * (kp_scores[start_p] + kp_scores[end_p])) + 1)
-                # transparency = max(
+                #transparency = max(
                 #    0, min(1, (kp_scores[start_p] + kp_scores[end_p])))
-                # img = cv2.addWeighted(bg, transparency, img, 1, 0)
+                #img = cv2.addWeighted(bg, transparency, img, 1, 0)
     return img
+
+
+def get_3rd_point(a, b):
+    direct = a - b
+    return b + np.array([-direct[1], direct[0]], dtype=np.float32)
+
+
+def get_dir(src_point, rot_rad):
+    sn, cs = np.sin(rot_rad), np.cos(rot_rad)
+
+    src_result = [0, 0]
+    src_result[0] = src_point[0] * cs - src_point[1] * sn
+    src_result[1] = src_point[0] * sn + src_point[1] * cs
+
+    return src_result

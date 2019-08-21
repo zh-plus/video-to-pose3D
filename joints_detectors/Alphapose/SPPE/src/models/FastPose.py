@@ -1,9 +1,9 @@
 import torch.nn as nn
 from torch.autograd import Variable
 
-from opt import opt
-from .layers.DUC import DUC
 from .layers.SE_Resnet import SEResnet
+from .layers.DUC import DUC
+from opt import opt
 
 
 def createModel():

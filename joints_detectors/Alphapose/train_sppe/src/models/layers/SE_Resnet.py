@@ -4,8 +4,8 @@
 # -----------------------------------------------------
 
 import torch.nn as nn
-import torch.nn.functional as F
 from models.layers.SE_module import SELayer
+import torch.nn.functional as F
 
 
 class Bottleneck(nn.Module):

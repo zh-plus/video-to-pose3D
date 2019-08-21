@@ -1,43 +1,35 @@
-import ntpath
-
-import cv2
-from tqdm import tqdm
+import os
 
 from SPPE.src.main_fast_inference import *
-from dataloader import VideoLoader, DetectionLoader, DetectionProcessor, DataWriter, Mscoco
+from dataloader import ImageLoader, DetectionLoader, DetectionProcessor, DataWriter, Mscoco
 from fn import getTime
 from opt import opt
 from pPose_nms import write_json
+from tqdm import tqdm
 
-#  import ipdb;pdb = ipdb.set_trace
 
-args = opt
-args.dataset = 'coco'
-if not args.sp:
-    torch.multiprocessing.set_start_method('forkserver', force=True)
-    torch.multiprocessing.set_sharing_strategy('file_system')
-
-if __name__ == "__main__":
-    videofile = args.video
+def main(args):
+    inputpath = args.inputpath
+    inputlist = args.inputlist
     mode = args.mode
     if not os.path.exists(args.outputpath):
         os.mkdir(args.outputpath)
 
-    if not len(videofile):
-        raise IOError('Error: must contain --video')
+    if len(inputlist):
+        im_names = open(inputlist, 'r').readlines()
+    elif len(inputpath) and inputpath != '/':
+        for root, dirs, files in os.walk(inputpath):
+            im_names = files
+    else:
+        raise IOError('Error: must contain either --indir/--list')
 
-    # Load input video
-    # 每次取50个frame
-    data_loader = VideoLoader(videofile, batchSize=args.detbatch).start()
-    (fourcc, fps, frameSize) = data_loader.videoinfo()
-
-    print('the video is {} f/s'.format(fps))
+    # Load input images
+    data_loader = ImageLoader(im_names, batchSize=args.detbatch, format='yolo').start()
 
     # Load detection loader
     print('Loading YOLO model..')
     sys.stdout.flush()
     det_loader = DetectionLoader(data_loader, batchSize=args.detbatch).start()
-    #  start a thread to read frames from the file video stream
     det_processor = DetectionProcessor(det_loader).start()
 
     # Load pose model
@@ -55,18 +47,17 @@ if __name__ == "__main__":
         'pn': []
     }
 
-    # Data writer
-    save_path = os.path.join(args.outputpath, 'AlphaPose_' + ntpath.basename(videofile).split('.')[0] + '.avi')
-    writer = DataWriter(args.save_video, save_path, cv2.VideoWriter_fourcc(*'XVID'), fps, frameSize).start()
+    # Init data writer
+    writer = DataWriter(args.save_video).start()
 
-    im_names_desc = tqdm(range(data_loader.length()))
+    data_len = data_loader.length()
+    im_names_desc = tqdm(range(data_len))
+
     batchSize = args.posebatch
     for i in im_names_desc:
         start_time = getTime()
         with torch.no_grad():
             (inps, orig_img, im_name, boxes, scores, pt1, pt2) = det_processor.read()
-            if orig_img is None:
-                break
             if boxes is None or boxes.nelement() == 0:
                 writer.save(None, None, None, None, None, orig_img, im_name.split('/')[-1])
                 continue
@@ -88,9 +79,7 @@ if __name__ == "__main__":
             hm = torch.cat(hm)
             ckpt_time, pose_time = getTime(ckpt_time)
             runtime_profile['pt'].append(pose_time)
-
-            hm = hm.cpu().data
-            #  import ipdb;ipdb.set_trace()
+            hm = hm.cpu()
             writer.save(boxes, scores, hm, pt1, pt2, orig_img, im_name.split('/')[-1])
 
             ckpt_time, post_time = getTime(ckpt_time)
@@ -99,10 +88,11 @@ if __name__ == "__main__":
         if args.profile:
             # TQDM
             im_names_desc.set_description(
-                'det time: {dt:.4f} | pose time: {pt:.4f} | post processing: {pn:.4f}'.format(
+                'det time: {dt:.3f} | pose time: {pt:.2f} | post processing: {pn:.4f}'.format(
                     dt=np.mean(runtime_profile['dt']), pt=np.mean(runtime_profile['pt']), pn=np.mean(runtime_profile['pn']))
             )
 
+    print('===========================> Finish Model Running.')
     if (args.save_img or args.save_video) and not args.vis_fast:
         print('===========================> Rendering remaining images in the queue...')
         print('===========================> If this step takes too long, you can enable the --vis_fast flag to use fast rendering (real-time).')
@@ -110,18 +100,21 @@ if __name__ == "__main__":
         pass
     writer.stop()
     final_result = writer.results()
-
-    kpts = []
-    for i in range(len(final_result)):
-        kpt = final_result[i]['result'][0]['keypoints']
-        kpts.append(kpt.data.numpy())
-
-    import ipdb;
-
-    ipdb.set_trace()
-    filename = os.path.basename(args.video).split('.')[0]
-    name = '/home/xyliu/experiments/VideoPose3D/data/' + filename
-    kpts = np.array(kpts).astype(np.float32)
-    np.savez_compressed(name, kpts=kpts)
-
     write_json(final_result, args.outputpath)
+
+
+if __name__ == "__main__":
+    args = opt
+    args.dataset = 'coco'
+    args.sp = True
+    if not args.sp:
+        torch.multiprocessing.set_start_method('forkserver', force=True)
+        torch.multiprocessing.set_sharing_strategy('file_system')
+
+    video_name = 'kunkun'
+    args.inputpath = f'data/split_{video_name}'
+    args.outputpath = f'data/alphapose_{video_name}'
+
+    args.save_img = True
+
+    main(args)

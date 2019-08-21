@@ -70,7 +70,7 @@ REGIONAL_URLS = {
 }
 
 
-def test_connection(name, url, timeout=10):
+def connection_test(name, url, timeout=10):
     """Simple connection test"""
     urlinfo = urlparse(url)
     start = time.time()
@@ -171,7 +171,7 @@ def check_network(args):
             import warnings
             warnings.warn('Region {} do not need specific test, please refer to global sites.'.format(r))
     for name, url in URLS.items():
-        test_connection(name, url, args.timeout)
+        connection_test(name, url, args.timeout)
 
 
 if __name__ == '__main__':

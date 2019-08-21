@@ -1,14 +1,27 @@
-import cv2
+import torch
 from torch.autograd import Variable
-from tqdm import tqdm
+import torch.nn.functional as F
+import torchvision.transforms as transforms
 
-from SPPE.src.main_fast_inference import *
-from dataloader import WebcamLoader, DataWriter, crop_from_dets, Mscoco
-from fn import getTime
+import torch.nn as nn
+import torch.utils.data
+import numpy as np
 from opt import opt
-from pPose_nms import write_json
+
+from dataloader import WebcamLoader, DataWriter, crop_from_dets, Mscoco
 from yolo.darknet import Darknet
-from yolo.util import dynamic_write_results
+from yolo.util import write_results, dynamic_write_results
+from SPPE.src.main_fast_inference import *
+
+from SPPE.src.utils.img import im_to_torch
+import os
+import sys
+from tqdm import tqdm
+import time
+from fn import getTime
+import cv2
+
+from pPose_nms import write_json
 
 args = opt
 args.dataset = 'coco'
@@ -132,7 +145,7 @@ if __name__ == "__main__":
     if (args.save_img or args.save_video) and not args.vis_fast:
         print('===========================> Rendering remaining images in the queue...')
         print('===========================> If this step takes too long, you can enable the --vis_fast flag to use fast rendering (real-time).')
-    while (writer.running()):
+    while writer.running():
         pass
     writer.stop()
     final_result = writer.results()

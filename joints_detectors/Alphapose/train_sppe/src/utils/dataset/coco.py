@@ -4,20 +4,19 @@
 # -----------------------------------------------------
 
 import os
+import h5py
 from functools import reduce
 
-import h5py
 import torch.utils.data as data
-
-from opt import opt
 from ..pose import generateSampleBox
+from opt import opt
 
 
 class Mscoco(data.Dataset):
     def __init__(self, train=True, sigma=1,
                  scale_factor=(0.2, 0.3), rot_factor=40, label_type='Gaussian'):
-        self.img_folder = '../data/coco/images'  # root image folders
-        self.is_train = train  # training set or test set
+        self.img_folder = '../data/coco/images'    # root image folders
+        self.is_train = train           # training set or test set
         self.inputResH = opt.inputResH
         self.inputResW = opt.inputResW
         self.outputResH = opt.outputResH

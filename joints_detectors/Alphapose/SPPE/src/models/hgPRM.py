@@ -1,12 +1,10 @@
-import math
-
-import torch
 import torch.nn as nn
-from torch.autograd import Variable
-
-from opt import opt
 from .layers.PRM import Residual as ResidualPyramid
 from .layers.Residual import Residual as Residual
+from torch.autograd import Variable
+import torch
+from opt import opt
+import math
 
 
 class Hourglass(nn.Module):

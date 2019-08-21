@@ -1,10 +1,14 @@
-import matplotlib
 import numpy as np
-import scipy.misc
+import cv2
 import torch
+import scipy.misc
+from torchvision import transforms
 import torch.nn.functional as F
-from torchsample.transforms import SpecialCrop, Pad
+from scipy.ndimage import maximum_filter
 
+from PIL import Image
+from copy import deepcopy
+import matplotlib
 matplotlib.use('agg')
 import matplotlib.pyplot as plt
 
@@ -95,7 +99,7 @@ def drawGaussian(img, pt, sigma):
     x = np.arange(0, size, 1, float)
     y = x[:, np.newaxis]
     x0 = y0 = size // 2
-    sigma = size / 4.0
+    sigma = size / 4.0    
     # The gaussian is not normalized, we want the center value to equal 1
     g = np.exp(- ((x - x0) ** 2 + (y - y0) ** 2) / (2 * sigma ** 2))
 
@@ -195,7 +199,7 @@ def transformBox(pt, ul, br, inpH, inpW, resH, resW):
 
 
 def transformBoxInvert(pt, ul, br, inpH, inpW, resH, resW):
-    center = torch.zeros(2)
+    center = np.zeros(2)
     center[0] = (br[0] - 1 - ul[0]) / 2
     center[1] = (br[1] - 1 - ul[1]) / 2
 
@@ -206,7 +210,7 @@ def transformBoxInvert(pt, ul, br, inpH, inpW, resH, resW):
     _pt[0] = _pt[0] - max(0, (lenW - 1) / 2 - center[0])
     _pt[1] = _pt[1] - max(0, (lenH - 1) / 2 - center[1])
 
-    new_point = torch.zeros(2)
+    new_point = np.zeros(2)
     new_point[0] = _pt[0] + ul[0]
     new_point[1] = _pt[1] + ul[1]
     return new_point
@@ -223,7 +227,7 @@ def transformBoxInvert_batch(pt, ul, br, inpH, inpW, resH, resW):
     size = br - ul
     size[:, 0] *= (inpH / inpW)
 
-    lenH, _ = torch.max(size, dim=1)  # [n,]
+    lenH, _ = torch.max(size, dim=1)   # [n,]
     lenW = lenH * (inpW / inpH)
 
     _pt = (pt * lenH[:, np.newaxis, np.newaxis]) / resH
@@ -240,51 +244,97 @@ def transformBoxInvert_batch(pt, ul, br, inpH, inpW, resH, resW):
 
 def cropBox(img, ul, br, resH, resW):
     ul = ul.int()
-    br = br.int()
-    lenH = max(br[1] - ul[1], (br[0] - ul[0]) * resH / resW)
+    br = (br - 1).int()
+    # br = br.int()
+    lenH = max((br[1] - ul[1]).item(), (br[0] - ul[0]).item() * resH / resW)
     lenW = lenH * resW / resH
     if img.dim() == 2:
         img = img[np.newaxis, :]
 
-    newDim = torch.IntTensor((img.size(0), int(lenH), int(lenW)))
-    newImg = img[:, ul[1]:, ul[0]:]
-    # Crop and Padding
-    size = torch.IntTensor((br[1] - ul[1], br[0] - ul[0]))
+    box_shape = [(br[1] - ul[1]).item(), (br[0] - ul[0]).item()]
+    pad_size = [(lenH - box_shape[0]) // 2, (lenW - box_shape[1]) // 2]
+    # Padding Zeros
+    if ul[1] > 0:
+        img[:, :ul[1], :] = 0
+    if ul[0] > 0:
+        img[:, :, :ul[0]] = 0
+    if br[1] < img.shape[1] - 1:
+        img[:, br[1] + 1:, :] = 0
+    if br[0] < img.shape[2] - 1:
+        img[:, :, br[0] + 1:] = 0
 
-    newImg = SpecialCrop(size, 1)(newImg)
-    newImg = Pad(newDim)(newImg)
-    # Resize to output
+    src = np.zeros((3, 2), dtype=np.float32)
+    dst = np.zeros((3, 2), dtype=np.float32)
 
-    v_Img = torch.unsqueeze(newImg, 0)
-    # newImg = F.upsample_bilinear(v_Img, size=(int(resH), int(resW))).data[0]
-    newImg = F.upsample(v_Img, size=(int(resH), int(resW)),
-                        mode='bilinear', align_corners=True).data[0]
-    return newImg
+    src[0, :] = np.array(
+        [ul[0] - pad_size[1], ul[1] - pad_size[0]], np.float32)
+    src[1, :] = np.array(
+        [br[0] + pad_size[1], br[1] + pad_size[0]], np.float32)
+    dst[0, :] = 0
+    dst[1, :] = np.array([resW - 1, resH - 1], np.float32)
+
+    src[2:, :] = get_3rd_point(src[0, :], src[1, :])
+    dst[2:, :] = get_3rd_point(dst[0, :], dst[1, :])
+
+    trans = cv2.getAffineTransform(np.float32(src), np.float32(dst))
+
+    dst_img = cv2.warpAffine(torch_to_im(img), trans,
+                             (resW, resH), flags=cv2.INTER_LINEAR)
+
+    return im_to_torch(torch.Tensor(dst_img))
 
 
-def flip_v(x, cuda=True, volatile=True):
-    x = flip(x.cpu().data)
-    if cuda:
-        x = x.cuda()
-    x = torch.autograd.Variable(x, volatile=volatile)
-    return x
+def cv_rotate(img, rot, resW, resH):
+    center = np.array((resW - 1, resH - 1)) / 2
+    rot_rad = np.pi * rot / 180
+
+    src_dir = get_dir([0, (resH - 1) * -0.5], rot_rad)
+    dst_dir = np.array([0, (resH - 1) * -0.5], np.float32)
+
+    src = np.zeros((3, 2), dtype=np.float32)
+    dst = np.zeros((3, 2), dtype=np.float32)
+
+    src[0, :] = center
+    src[1, :] = center + src_dir
+    dst[0, :] = [(resW - 1) * 0.5, (resH - 1) * 0.5]
+    dst[1, :] = np.array([(resW - 1) * 0.5, (resH - 1) * 0.5]) + dst_dir
+
+    src[2:, :] = get_3rd_point(src[0, :], src[1, :])
+    dst[2:, :] = get_3rd_point(dst[0, :], dst[1, :])
+
+    trans = cv2.getAffineTransform(np.float32(src), np.float32(dst))
+
+    dst_img = cv2.warpAffine(torch_to_im(img), trans,
+                             (resW, resH), flags=cv2.INTER_LINEAR)
+
+    return im_to_torch(torch.Tensor(dst_img))
 
 
 def flip(x):
     assert (x.dim() == 3 or x.dim() == 4)
-    # dim = x.dim() - 1
-    x = x.numpy().copy()
-    if x.ndim == 3:
-        x = np.transpose(np.fliplr(np.transpose(x, (0, 2, 1))), (0, 2, 1))
-    elif x.ndim == 4:
-        for i in range(x.shape[0]):
-            x[i] = np.transpose(
-                np.fliplr(np.transpose(x[i], (0, 2, 1))), (0, 2, 1))
-    # x = x.swapaxes(dim, 0)
-    # x = x[::-1, ...]
-    # x = x.swapaxes(0, dim)
+    dim = x.dim() - 1
+    if '0.4.1' in torch.__version__ or '1.0' in torch.__version__:
+        return x.flip(dims=(dim,))
+    else:
+        is_cuda = False
+        if x.is_cuda:
+            is_cuda = True
+            x = x.cpu()
+        x = x.numpy().copy()
+        if x.ndim == 3:
+            x = np.transpose(np.fliplr(np.transpose(x, (0, 2, 1))), (0, 2, 1))
+        elif x.ndim == 4:
+            for i in range(x.shape[0]):
+                x[i] = np.transpose(
+                    np.fliplr(np.transpose(x[i], (0, 2, 1))), (0, 2, 1))
+        # x = x.swapaxes(dim, 0)
+        # x = x[::-1, ...]
+        # x = x.swapaxes(0, dim)
 
-    return torch.from_numpy(x.copy())
+        x = torch.from_numpy(x.copy())
+        if is_cuda:
+            x = x.cuda()
+        return x
 
 
 def shuffleLR(x, dataset):
@@ -298,20 +348,12 @@ def shuffleLR(x, dataset):
             tmp = x[:, dim1].clone()
             x[:, dim1] = x[:, dim0].clone()
             x[:, dim0] = tmp.clone()
-            # x[:, dim0], x[:, dim1] = deepcopy((x[:, dim1], x[:, dim0]))
+            #x[:, dim0], x[:, dim1] = deepcopy((x[:, dim1], x[:, dim0]))
         else:
             tmp = x[dim1].clone()
             x[dim1] = x[dim0].clone()
             x[dim0] = tmp.clone()
-            # x[dim0], x[dim1] = deepcopy((x[dim1], x[dim0]))
-    return x
-
-
-def shuffleLR_v(x, dataset, cuda=False):
-    x = shuffleLR(x.cpu().data, dataset)
-    if cuda:
-        x = x.cuda()
-    x = torch.autograd.Variable(x)
+            #x[dim0], x[dim1] = deepcopy((x[dim1], x[dim0]))
     return x
 
 
@@ -334,7 +376,7 @@ def drawMPII(inps, preds):
     fig = plt.figure()
     plt.imshow(imgs[0])
     ax = fig.add_subplot(1, 1, 1)
-    # print(preds.shape)
+    #print(preds.shape)
     for p in range(16):
         x, y = preds[0][p]
         cor = (round(x), round(y)), 10
@@ -362,7 +404,7 @@ def drawCOCO(inps, preds, scores):
     fig = plt.figure()
     plt.imshow(imgs[0])
     ax = fig.add_subplot(1, 1, 1)
-    # print(preds.shape)
+    #print(preds.shape)
     for p in range(17):
         if scores[0][p][0] < 0.2:
             continue
@@ -374,3 +416,82 @@ def drawCOCO(inps, preds, scores):
     plt.show()
 
     return imgs
+
+
+def get_3rd_point(a, b):
+    direct = a - b
+    return b + np.array([-direct[1], direct[0]], dtype=np.float32)
+
+
+def get_dir(src_point, rot_rad):
+    sn, cs = np.sin(rot_rad), np.cos(rot_rad)
+
+    src_result = [0, 0]
+    src_result[0] = src_point[0] * cs - src_point[1] * sn
+    src_result[1] = src_point[0] * sn + src_point[1] * cs
+
+    return src_result
+
+
+def findPeak(hm):
+    mx = maximum_filter(hm, size=5)
+    idx = zip(*np.where((mx == hm) * (hm > 0.1)))
+    candidate_points = []
+    for (y, x) in idx:
+        candidate_points.append([x, y, hm[y][x]])
+    if len(candidate_points) == 0:
+        return torch.zeros(0)
+    candidate_points = np.array(candidate_points)
+    candidate_points = candidate_points[np.lexsort(-candidate_points.T)]
+    return torch.Tensor(candidate_points)
+
+
+def processPeaks(candidate_points, hm, pt1, pt2, inpH, inpW, resH, resW):
+    # type: (Tensor, Tensor, Tensor, Tensor, float, float, float, float) -> List[Tensor]
+
+    if candidate_points.shape[0] == 0:  # Low Response
+        maxval = np.max(hm.reshape(1, -1), 1)
+        idx = np.argmax(hm.reshape(1, -1), 1)
+
+        x = idx % resW
+        y = int(idx / resW)
+
+        candidate_points = np.zeros((1, 3))
+        candidate_points[0, 0:1] = x
+        candidate_points[0, 1:2] = y
+        candidate_points[0, 2:3] = maxval
+
+    res_pts = []
+    for i in range(candidate_points.shape[0]):
+        x, y, maxval = candidate_points[i][0], candidate_points[i][1], candidate_points[i][2]
+
+        if bool(maxval < 0.05) and len(res_pts) > 0:
+            pass
+        else:
+            if bool(x > 0) and bool(x < resW - 2):
+                if bool(hm[int(y)][int(x) + 1] - hm[int(y)][int(x) - 1] > 0):
+                    x += 0.25
+                elif bool(hm[int(y)][int(x) + 1] - hm[int(y)][int(x) - 1] < 0):
+                    x -= 0.25
+            if bool(y > 0) and bool(y < resH - 2):
+                if bool(hm[int(y) + 1][int(x)] - hm[int(y) - 1][int(x)] > 0):
+                    y += (0.25 * inpH / inpW)
+                elif bool(hm[int(y) + 1][int(x)] - hm[int(y) - 1][int(x)] < 0):
+                    y -= (0.25 * inpH / inpW)
+
+            #pt = torch.zeros(2)
+            pt = np.zeros(2)
+            pt[0] = x + 0.2
+            pt[1] = y + 0.2
+
+            pt = transformBoxInvert(pt, pt1, pt2, inpH, inpW, resH, resW)
+
+            res_pt = np.zeros(3)
+            res_pt[:2] = pt
+            res_pt[2] = maxval
+
+            res_pts.append(res_pt)
+
+            if maxval < 0.05:
+                break
+    return res_pts

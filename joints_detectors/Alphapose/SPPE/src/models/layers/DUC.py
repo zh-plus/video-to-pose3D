@@ -1,4 +1,5 @@
 import torch.nn as nn
+import torch.nn.functional as F
 
 
 class DUC(nn.Module):
@@ -6,7 +7,6 @@ class DUC(nn.Module):
     INPUT: inplanes, planes, upscale_factor
     OUTPUT: (planes // 4)* ht * wd
     '''
-
     def __init__(self, inplanes, planes, upscale_factor=2):
         super(DUC, self).__init__()
         self.conv = nn.Conv2d(inplanes, planes, kernel_size=3, padding=1, bias=False)

@@ -13,15 +13,15 @@ import torchvision.transforms as transforms
 from PIL import Image
 from torch.autograd import Variable
 
-from SPPE.src.utils.eval import getPrediction
+from SPPE.src.utils.eval import getPrediction, getMultiPeakPrediction
 from SPPE.src.utils.img import load_image, cropBox, im_to_torch
+from matching import candidate_reselect as matching
 from opt import opt
 from pPose_nms import pose_nms
 from yolo.darknet import Darknet
 from yolo.preprocess import prep_image, prep_frame
 from yolo.util import dynamic_write_results
 
-main_path = os.path.dirname(os.path.realpath(__file__))
 # import the Queue class from Python 3
 if sys.version_info >= (3, 0):
     from queue import Queue, LifoQueue
@@ -34,8 +34,6 @@ if opt.vis_fast:
 else:
     from fn import vis_frame
 
-
-#  import ipdb; pdb=ipdb.set_trace
 
 class Image_loader(data.Dataset):
     def __init__(self, im_names, format='yolo'):
@@ -65,7 +63,6 @@ class Image_loader(data.Dataset):
         inp_dim = int(opt.inp_dim)
         im_name = self.imglist[index].rstrip('\n').rstrip('\r')
         im_name = os.path.join(self.img_dir, im_name)
-        #  import ipdb;ipdb.set_trace()
         im, orig_img, im_dim = prep_image(im_name, inp_dim)
         # im_dim = torch.FloatTensor([im_dim]).repeat(1, 2)
 
@@ -152,7 +149,6 @@ class ImageLoader:
                 inp_dim = int(opt.inp_dim)
                 im_name_k = self.imglist[k].rstrip('\n').rstrip('\r')
                 im_name_k = os.path.join(self.img_dir, im_name_k)
-                #  print(im_name_k)
                 img_k, orig_img_k, im_dim_list_k = prep_image(im_name_k, inp_dim)
 
                 img.append(img_k)
@@ -193,7 +189,7 @@ class VideoLoader:
         self.batchSize = batchSize
         self.datalen = int(self.stream.get(cv2.CAP_PROP_FRAME_COUNT))
         leftover = 0
-        if self.datalen % batchSize:
+        if (self.datalen) % batchSize:
             leftover = 1
         self.num_batches = self.datalen // batchSize + leftover
 
@@ -220,31 +216,31 @@ class VideoLoader:
         return self
 
     def update(self):
-        # stream = cv2.VideoCapture(self.path)
-        assert self.stream.isOpened(), 'Cannot capture source'
+        stream = cv2.VideoCapture(self.path)
+        assert stream.isOpened(), 'Cannot capture source'
 
         for i in range(self.num_batches):
             img = []
             orig_img = []
             im_name = []
             im_dim_list = []
-            # for k in range(i * self.batchSize, min((i + 1) * self.batchSize, self.datalen)):
-            inp_dim = int(opt.inp_dim)
-            (grabbed, frame) = self.stream.read()
-            # if the `grabbed` boolean is `False`, then we have
-            # reached the end of the video file
-            if not grabbed:
-                self.Q.put((None, None, None, None))
-                print('===========================> This video get ' + str(i) + ' frames in total.')
-                sys.stdout.flush()
-                return
-            # process and add the frame to the queue
-            img_k, orig_img_k, im_dim_list_k = prep_frame(frame, inp_dim)
+            for k in range(i * self.batchSize, min((i + 1) * self.batchSize, self.datalen)):
+                inp_dim = int(opt.inp_dim)
+                (grabbed, frame) = stream.read()
+                # if the `grabbed` boolean is `False`, then we have
+                # reached the end of the video file
+                if not grabbed:
+                    self.Q.put((None, None, None, None))
+                    print('===========================> This video get ' + str(k) + ' frames in total.')
+                    sys.stdout.flush()
+                    return
+                # process and add the frame to the queue
+                img_k, orig_img_k, im_dim_list_k = prep_frame(frame, inp_dim)
 
-            img.append(img_k)
-            orig_img.append(orig_img_k)
-            im_name.append(f'image{str(i).zfill(len(str(self.datalen)) + 1)}.jpg')
-            im_dim_list.append(im_dim_list_k)
+                img.append(img_k)
+                orig_img.append(orig_img_k)
+                im_name.append(str(k) + '.jpg')
+                im_dim_list.append(im_dim_list_k)
 
             with torch.no_grad():
                 # Human Detection
@@ -275,8 +271,8 @@ class DetectionLoader:
     def __init__(self, dataloder, batchSize=1, queueSize=1024):
         # initialize the file video stream along with the boolean
         # used to indicate if the thread should be stopped or not
-        self.det_model = Darknet(main_path + '/' + "yolo/cfg/yolov3-spp.cfg")
-        self.det_model.load_weights(main_path + '/' + 'models/yolo/yolov3-spp.weights')
+        self.det_model = Darknet("joints_detectors/Alphapose/yolo/cfg/yolov3-spp.cfg")
+        self.det_model.load_weights('joints_detectors/Alphapose/models/yolo/yolov3-spp.weights')
         self.det_model.net_info['height'] = opt.inp_dim
         self.det_inp_dim = int(self.det_model.net_info['height'])
         assert self.det_inp_dim % 32 == 0
@@ -306,15 +302,15 @@ class DetectionLoader:
             t.daemon = True
             t.start()
         else:
-            p = mp.Process(target=self.update, args=())
-            p.daemon = True
+            p = mp.Process(target=self.update, args=(), daemon=True)
+            # p = mp.Process(target=self.update, args=())
+            # p.daemon = True
             p.start()
         return self
 
     def update(self):
         # keep looping the whole dataset
         for i in range(self.num_batches):
-
             img, orig_img, im_name, im_dim_list = self.dataloder.getitem()
             if img is None:
                 self.Q.put((None, None, None, None, None, None, None))
@@ -360,8 +356,6 @@ class DetectionLoader:
                 pt2 = torch.zeros(boxes_k.size(0), 2)
                 if self.Q.full():
                     time.sleep(2)
-                #  p = print
-                #  p(boxes_k.shape, pt1.shape)
                 self.Q.put((orig_img[k], im_name[k], boxes_k, scores[dets[:, 0] == k], inps, pt1, pt2))
 
     def read(self):
@@ -390,12 +384,14 @@ class DetectionProcessor:
     def start(self):
         # start a thread to read frames from the file video stream
         if opt.sp:
+            # t = Thread(target=self.update, args=(), daemon=True)
             t = Thread(target=self.update, args=())
             t.daemon = True
             t.start()
         else:
-            p = mp.Process(target=self.update, args=())
-            p.daemon = True
+            p = mp.Process(target=self.update, args=(), daemon=True)
+            # p = mp.Process(target=self.update, args=())
+            # p.daemon = True
             p.start()
         return self
 
@@ -404,10 +400,8 @@ class DetectionProcessor:
         for i in range(self.datalen):
 
             with torch.no_grad():
-                ## 第一步人体检测
                 (orig_img, im_name, boxes, scores, inps, pt1, pt2) = self.detectionLoader.read()
                 if orig_img is None:
-                    print(f'{i}-th image read None: DetectionProcessor')
                     self.Q.put((None, None, None, None, None, None, None))
                     return
                 if boxes is None or boxes.nelement() == 0:
@@ -420,13 +414,6 @@ class DetectionProcessor:
 
                 while self.Q.full():
                     time.sleep(0.2)
-                p = print
-                #  p('---------------------------------')
-                #  p(boxes.shape)
-                #  p(scores.shape)
-                #  p(pt1.shape)
-                #  p(pt2.shape)
-                #  p(orig_img.shape)
                 self.Q.put((inps, orig_img, im_name, boxes, scores, pt1, pt2))
 
     def read(self):
@@ -642,8 +629,9 @@ class DataWriter:
 
     def start(self):
         # start a thread to read frames from the file video stream
-        t = Thread(target=self.update, args=())
-        t.daemon = True
+        t = Thread(target=self.update, args=(), daemon=True)
+        # t = Thread(target=self.update, args=())
+        # t.daemon = True
         t.start()
         return self
 
@@ -672,11 +660,15 @@ class DataWriter:
                             self.stream.write(img)
                 else:
                     # location prediction (n, kp, 2) | score prediction (n, kp, 1)
-
-                    preds_hm, preds_img, preds_scores = getPrediction(
-                        hm_data, pt1, pt2, opt.inputResH, opt.inputResW, opt.outputResH, opt.outputResW)
-
-                    result = pose_nms(boxes, scores, preds_img, preds_scores)
+                    if opt.matching:
+                        preds = getMultiPeakPrediction(
+                            hm_data, pt1.numpy(), pt2.numpy(), opt.inputResH, opt.inputResW, opt.outputResH, opt.outputResW)
+                        result = matching(boxes, scores.numpy(), preds)
+                    else:
+                        preds_hm, preds_img, preds_scores = getPrediction(
+                            hm_data, pt1, pt2, opt.inputResH, opt.inputResW, opt.outputResH, opt.outputResW)
+                        result = pose_nms(
+                            boxes, scores, preds_img, preds_scores)
                     result = {
                         'imgname': im_name,
                         'result': result
@@ -767,10 +759,8 @@ def crop_from_dets(img, boxes, inps, pt1, pt2):
 
         ht = bottomRight[1] - upLeft[1]
         width = bottomRight[0] - upLeft[0]
-        if width > 100:
-            scaleRate = 0.2
-        else:
-            scaleRate = 0.3
+
+        scaleRate = 0.3
 
         upLeft[0] = max(0, upLeft[0] - width * scaleRate / 2)
         upLeft[1] = max(0, upLeft[1] - ht * scaleRate / 2)
@@ -780,7 +770,7 @@ def crop_from_dets(img, boxes, inps, pt1, pt2):
             min(imght - 1, bottomRight[1] + ht * scaleRate / 2), upLeft[1] + 5)
 
         try:
-            inps[i] = cropBox(tmp_img, upLeft, bottomRight, opt.inputResH, opt.inputResW)
+            inps[i] = cropBox(tmp_img.clone(), upLeft, bottomRight, opt.inputResH, opt.inputResW)
         except IndexError:
             print(tmp_img.shape)
             print(upLeft)

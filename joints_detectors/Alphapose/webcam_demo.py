@@ -1,3 +1,8 @@
+from opt import opt
+
+import os
+import numpy as np
+
 import cv2
 from tqdm import tqdm
 
@@ -92,7 +97,7 @@ if __name__ == "__main__":
             if args.profile:
                 # TQDM
                 im_names_desc.set_description(
-                    'det time: {dt:.4f} | pose time: {pt:.4f} | post processing: {pn:.4f}'.format(
+                    'det time: {dt:.3f} | pose time: {pt:.2f} | post processing: {pn:.4f}'.format(
                         dt=np.mean(runtime_profile['dt']), pt=np.mean(runtime_profile['pt']), pn=np.mean(runtime_profile['pn']))
                 )
         except KeyboardInterrupt:

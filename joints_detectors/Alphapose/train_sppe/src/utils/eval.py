@@ -3,13 +3,15 @@
 # Written by Jiefeng Li (jeff.lee.sjtu@gmail.com)
 # -----------------------------------------------------
 
+from opt import opt
+import sys
 import numpy as np
+
 import torch
 from pycocotools.coco import COCO
 from pycocotools.cocoeval import COCOeval
-from utils.img import transformBoxInvert
 
-from opt import opt
+from .img import transformBoxInvert
 
 
 class DataLogger(object):
@@ -151,8 +153,8 @@ def getPrediction(hms, pt1, pt2, inpH, inpW, resH, resW):
                 preds[i][j] += diff
 
     preds_tf = torch.zeros(preds.size())
-    for i in range(hms.size(0)):  # Number of samples
-        for j in range(hms.size(1)):  # Number of output heatmaps for one sample
+    for i in range(hms.size(0)):        # Number of samples
+        for j in range(hms.size(1)):    # Number of output heatmaps for one sample
             preds_tf[i][j] = transformBoxInvert(
                 preds[i][j], pt1[i], pt2[i], inpH, inpW, resH, resW)
 

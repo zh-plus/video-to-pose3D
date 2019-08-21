@@ -1,11 +1,9 @@
-from collections import defaultdict
-
 import torch.nn as nn
-from torch.autograd import Variable
-
-from opt import opt
 from .layers.PRM import Residual as ResidualPyramid
 from .layers.Residual import Residual as Residual
+from torch.autograd import Variable
+from opt import opt
+from collections import defaultdict
 
 
 class Hourglass(nn.Module):
@@ -14,7 +12,7 @@ class Hourglass(nn.Module):
 
         self.ResidualUp = ResidualPyramid if n >= 2 else Residual
         self.ResidualDown = ResidualPyramid if n >= 3 else Residual
-
+        
         self.depth = n
         self.nModules = nModules
         self.nFeats = nFeats
@@ -33,7 +31,7 @@ class Hourglass(nn.Module):
             self.low2 = Hourglass(n - 1, nFeats, nModules, inputResH / 2, inputResW / 2, net_type, B, C)
         else:
             self.low2 = self._make_residual(self.ResidualDown, False, inputResH / 2, inputResW / 2)
-
+        
         self.low3 = self._make_residual(self.ResidualDown, True, inputResH / 2, inputResW / 2)
         self.up2 = nn.UpsamplingNearest2d(scale_factor=2)
 

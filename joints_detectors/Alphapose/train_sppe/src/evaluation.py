@@ -6,13 +6,16 @@
 import torch
 import torch.nn as nn
 import torch.utils.data
-from predict.annot.coco_minival import Mscoco_minival
-from predict.p_poseNMS import pose_nms, write_json
+from .predict.annot.coco_minival import Mscoco_minival
+from .predict.p_poseNMS import pose_nms, write_json
 import numpy as np
-from predict.opt import opt
+from .opt import opt
 from tqdm import tqdm
-from utils.eval import getPrediction
-from utils.eval import getmap
+from .utils.img import flip, shuffleLR, vis_frame
+from .util.eval import getPrediction
+from .util.eval import getmap
+import os
+import cv2
 
 
 def gaussian(size):
@@ -51,9 +54,9 @@ def prediction(model):
 
     tmp_inp = {}
     for i, (inp, box, im_name, metaData) in enumerate(minival_loader_desc):
-        # inp = torch.autograd.Variable(inp.cuda(), volatile=True)
+        #inp = torch.autograd.Variable(inp.cuda(), volatile=True)
         pt1, pt2, ori_inp = metaData
-        # with torch.autograd.profiler.profile(use_cuda=True) as prof:
+        #with torch.autograd.profiler.profile(use_cuda=True) as prof:
         if im_name[0] in tmp_inp.keys():
             inps = tmp_inp[im_name[0]]['inps']
             ori_inps = tmp_inp[im_name[0]]['ori_inps']
@@ -114,11 +117,11 @@ def prediction(model):
                 'imgname': im_name,
                 'result': result
             }
-        # img = display_frame(orig_img, result, opt.outputpath)
-        # ori_inp = np.transpose(
+        #img = display_frame(orig_img, result, opt.outputpath)
+        #ori_inp = np.transpose(
         #    ori_inp[0][:3].clone().numpy(), (1, 2, 0)) * 255
-        # img = vis_frame(ori_inp, result)
-        # cv2.imwrite(os.path.join(
+        #img = vis_frame(ori_inp, result)
+        #cv2.imwrite(os.path.join(
         #    './val', 'vis', im_name), img)
         final_result.append(result)
 

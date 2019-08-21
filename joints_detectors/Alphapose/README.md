@@ -5,7 +5,8 @@
 
 
 ## News!
-
+- Apr 2019: [**MXNet** version](https://github.com/MVIG-SJTU/AlphaPose/tree/mxnet) of AlphaPose is released! It runs at **23 fps** on COCO validation set.
+- Feb 2019: [CrowdPose](https://github.com/MVIG-SJTU/AlphaPose/blob/pytorch/doc/CrowdPose.md) is integrated into AlphaPose Now!
 - Dec 2018: [General version](https://github.com/MVIG-SJTU/AlphaPose/tree/pytorch/PoseFlow) of PoseFlow is released! 3X Faster and support pose tracking results visualization!
 - Sep 2018: [**PyTorch** version](https://github.com/MVIG-SJTU/AlphaPose/tree/pytorch) of AlphaPose is released! It runs at **20 fps** on COCO validation set (4.6 people per image on average) and achieves 71 mAP!
 
@@ -74,6 +75,13 @@ python3 demo.py --indir ${img_directory} --outdir examples/res --fast_inference 
 
 Please read [PoseFlow/README.md](PoseFlow/) for details.
 
+### CrowdPose
+<p align='center'>
+    <img src="doc/crowdpose.gif", width="360">
+</p>
+
+Please read [doc/CrowdPose.md](doc/CrowdPose.md) for details.
+
 
 ## FAQ
 Check out [faq.md](doc/faq.md) for faq.
@@ -101,4 +109,4 @@ Please cite these papers in your publications if it helps your research:
 
 
 ## License
-AlphaPose is freely available for free non-commercial use, and may be redistributed under these conditions. For commercial queries, contact [Cewu Lu](http://www.mvig.org/)
+AlphaPose is freely available for free non-commercial use, and may be redistributed under these conditions. For commercial queries, please drop an e-mail at mvig.alphapose[at]gmail[dot]com and cc lucewu[[at]sjtu[dot]edu[dot]cn. We will send the detail agreement to you.

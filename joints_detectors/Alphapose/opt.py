@@ -17,9 +17,8 @@ parser.add_argument('--snapshot', default=1, type=int,
 "----------------------------- AlphaPose options -----------------------------"
 parser.add_argument('--addDPG', default=False, type=bool,
                     help='Train with data augmentation')
-parser.add_argument('--sp', default=True, action='store_true',
+parser.add_argument('--sp', default=False, action='store_true',
                     help='Use single process for pytorch')
-# speed profile change to true
 parser.add_argument('--profile', default=False, action='store_true',
                     help='add speed profiling at screen output')
 
@@ -38,7 +37,6 @@ parser.add_argument('--nStack', default=4, type=int,
                     help='Number of hourglasses to stack')
 
 "----------------------------- Hyperparameter options -----------------------------"
-# SPPE speed
 parser.add_argument('--fast_inference', default=True, type=bool,
                     help='Fast inference')
 parser.add_argument('--use_pyranet', default=True, type=bool,
@@ -108,27 +106,25 @@ parser.add_argument('--port', dest='port',
 parser.add_argument('--net', dest='demo_net', help='Network to use [vgg16 res101]',
                     default='res152')
 parser.add_argument('--indir', dest='inputpath',
-                    help='image-directory', default="images/input")
+                    help='image-directory', default="")
 parser.add_argument('--list', dest='inputlist',
                     help='image-list', default="")
-# speed
 parser.add_argument('--mode', dest='mode',
-                    help='detection mode, fast/normal/accurate', default="accurate")
+                    help='detection mode, fast/normal/accurate', default="normal")
 parser.add_argument('--outdir', dest='outputpath',
                     help='output-directory', default="examples/res/")
-#  parser.add_argument('--inp_dim', dest='inp_dim', type=str, default='608',
-parser.add_argument('--inp_dim', dest='inp_dim', type=str, default='384',
+parser.add_argument('--inp_dim', dest='inp_dim', type=str, default='608',
                     help='inpdim')
 parser.add_argument('--conf', dest='confidence', type=float, default=0.05,
                     help='bounding box confidence threshold')
 parser.add_argument('--nms', dest='nms_thesh', type=float, default=0.6,
                     help='bounding box nms threshold')
-
-# save img
 parser.add_argument('--save_img', default=False, action='store_true',
                     help='save result as image')
 parser.add_argument('--vis', default=False, action='store_true',
                     help='visualize image')
+parser.add_argument('--matching', default=False, action='store_true',
+                    help='use best matching')
 parser.add_argument('--format', type=str,
                     help='save in the format of cmu or coco or openpose, option: coco/cmu/open')
 parser.add_argument('--detbatch', type=int, default=1,
@@ -138,17 +134,13 @@ parser.add_argument('--posebatch', type=int, default=80,
 
 "----------------------------- Video options -----------------------------"
 parser.add_argument('--video', dest='video',
-                    help='video-name', default="videos/input/dance.mp4")
+                    help='video-name', default="")
 parser.add_argument('--webcam', dest='webcam', type=str,
                     help='webcam number', default='0')
-# save videos
 parser.add_argument('--save_video', dest='save_video',
                     help='whether to save rendered video', default=False, action='store_true')
 parser.add_argument('--vis_fast', dest='vis_fast',
                     help='use fast rendering', action='store_true', default=False)
-
-#  opt = parser.parse_args()
-# 用在jupyter上
-opt = parser.parse_args(args=[])
+opt = parser.parse_args()
 
 opt.num_classes = 80
