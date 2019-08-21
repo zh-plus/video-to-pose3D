@@ -1,7 +1,7 @@
 # coding: utf-8
 
 """
-File: tracker-general.py
+File: tracker_general.py
 Project: AlphaPose
 File Created: Tuesday, 18st Dec 2018 14:55:41 pm
 -----
@@ -26,12 +26,12 @@ from PoseFlow.visualization import display_pose
 from common.utils import Timer, calculate_area
 
 
-def remove_irrelevant(no_track_result, percent=0.5):
+def remove_irrelevant(no_track_result, save_percent=0.5):
     """
     Do pruning for the image that more than 20 people appear.
 
     :param no_track_result: AlphaPose result json dict before pruning
-    :param percent: Kept percentage, (0, 1]
+    :param save_percent: Kept percentage, (0, 1]
     :return: pruned result dict
     """
     id_map = defaultdict(list)
@@ -44,12 +44,16 @@ def remove_irrelevant(no_track_result, percent=0.5):
         num = len(values)
         if num > 20:
             values.sort(key=lambda m: m['score'] * calculate_area(m['keypoints']), reverse=True)
-            relevant_result.extend(values[: int(num * percent)])
+            relevant_result.extend(values[: int(num * save_percent)])
 
     return relevant_result
 
 
 def main(args):
+    """
+    See function track for the args information.
+    """
+
     link_len = args.link
     weights = [1, 2, 1, 2, 0, 0]
     weights_fff = [0, 1, 0, 1, 0, 0]
@@ -70,7 +74,7 @@ def main(args):
 
         with open(notrack_json) as f:
             results = json.load(f)
-            # results = remove_irrelevant(results, 1)
+            results = remove_irrelevant(results, 1)
             for i in range(len(results)):
                 imgpath = results[i]['image_id']
                 if last_image_name != imgpath:
@@ -203,8 +207,9 @@ def track(video_name):
     # 7. match threshold in Hungarian Matching
 
     # User specific parameters
-    args.imgdir = f'outputs/alpha_pose_{video_name}/split_image'
-    args.result_dir = f'outputs/alpha_pose_{video_name}'
+    video_filename = video_name[:video_name.rfind('.')]
+    args.imgdir = f'outputs/alpha_pose_{video_filename}/split_image'
+    args.result_dir = f'outputs/alpha_pose_{video_filename}'
     args.in_json = f'{args.result_dir}/alphapose-results.json'
     args.out_json = f'{args.result_dir}/poseflow-results.json'
     args.visdir = f'{args.result_dir}/poseflow-vis'
@@ -219,4 +224,4 @@ if __name__ == '__main__':
     os.chdir('../..')
 
     with Timer('Track'):
-        track('kobe')
+        track('kobe.mp4')

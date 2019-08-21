@@ -6,13 +6,13 @@ from common.camera import *
 from common.generators import UnchunkedGenerator
 from common.loss import *
 from common.model import *
-from common.utils import Timer
+from common.utils import Timer, split_video, evaluate
 
 # from joints_detectors.openpose.main import generate_kpts as open_pose
 
 
 os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"  # see issue #152
-os.environ["CUDA_VISIBLE_DEVICES"] = "3"
+os.environ["CUDA_VISIBLE_DEVICES"] = "1"
 
 path = os.path.split(os.path.realpath(__file__))[0]
 
@@ -50,7 +50,7 @@ def get_detector_2d(detector_name):
     return detector_map[detector_name]()
 
 
-class skeleton():
+class Skeleton:
     def parents(self):
         return np.array([-1, 0, 1, 2, 0, 4, 5, 0, 7, 8, 9, 8, 11, 12, 8, 14, 15])
 
@@ -58,39 +58,13 @@ class skeleton():
         return [1, 2, 3, 9, 10]
 
 
-def evaluate(test_generator, model_pos, action=None, return_predictions=False):
-    joints_left, joints_right = list([4, 5, 6, 11, 12, 13]), list([1, 2, 3, 14, 15, 16])
-    with torch.no_grad():
-        model_pos.eval()
-
-        N = 0
-
-        for _, batch, batch_2d in test_generator.next_epoch():
-
-            inputs_2d = torch.from_numpy(batch_2d.astype('float32'))
-            if torch.cuda.is_available():
-                inputs_2d = inputs_2d.cuda()
-
-            # Positional model
-            predicted_3d_pos = model_pos(inputs_2d)
-
-            # Test-time augmentation (if enabled)
-            if test_generator.augment_enabled():
-                # Undo flipping and take average with non-flipped version
-                predicted_3d_pos[1, :, :, 0] *= -1
-                predicted_3d_pos[1, :, joints_left + joints_right] = predicted_3d_pos[1, :, joints_right + joints_left]
-                predicted_3d_pos = torch.mean(predicted_3d_pos, dim=0, keepdim=True)
-
-            if return_predictions:
-                return predicted_3d_pos.squeeze(0).cpu().numpy()
-
-
 def main(args):
     detector_2d = get_detector_2d(args.detector_2d)
 
     assert detector_2d, 'detector_2d should be in ({alpha, hr, open}_pose)'
 
-    # image_path = split_video(args.viz_video)
+    print(f'Splitting video: {args.viz_video} into images...')
+    split_video(args.viz_video)
 
     # 2D kpts loads or generate
     if not args.input_npz:
@@ -154,12 +128,12 @@ def main(args):
     if not args.viz_output:
         args.viz_output = 'outputs/alpha_result.mp4'
 
-    from common.visualization import render_animation_my
-    render_animation_my(input_keypoints, anim_output,
-                        skeleton(), 25, args.viz_bitrate, np.array(70., dtype=np.float32), args.viz_output,
-                        limit=args.viz_limit, downsample=args.viz_downsample, size=args.viz_size,
-                        input_video_path=args.viz_video, viewport=(1000, 1002),
-                        input_video_skip=args.viz_skip)
+    from common.visualization import render_animation
+    render_animation(input_keypoints, anim_output,
+                     Skeleton(), 25, args.viz_bitrate, np.array(70., dtype=np.float32), args.viz_output,
+                     limit=args.viz_limit, downsample=args.viz_downsample, size=args.viz_size,
+                     input_video_path=args.viz_video, viewport=(1000, 1002),
+                     input_video_skip=args.viz_skip)
 
     ckpt, time4 = ckpt_time(time3)
     print('total spend {:2f} second'.format(ckpt))
@@ -196,4 +170,4 @@ if __name__ == '__main__':
     # for p in video_paths:
     #     inference_video(p)
 
-    inference_video('outputs/actor2.mp4', 'hr_pose')
+    inference_video('outputs/kobe.mp4', 'alpha_pose')

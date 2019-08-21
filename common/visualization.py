@@ -50,8 +50,8 @@ def downsample_tensor(X, factor):
     return np.mean(X[:length].reshape(-1, factor, *X.shape[1:]), axis=1)
 
 
-def render_animation_my(keypoints, poses, skeleton, fps, bitrate, azim, output, viewport,
-                        limit=-1, downsample=1, size=6, input_video_path=None, input_video_skip=0):
+def render_animation(keypoints, poses, skeleton, fps, bitrate, azim, output, viewport,
+                     limit=-1, downsample=1, size=6, input_video_path=None, input_video_skip=0):
     """
     TODO
     Render an animation. The supported output modes are:

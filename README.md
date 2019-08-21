@@ -3,12 +3,11 @@
 > Predict 3d human pose from video
 
 <p align="center"><img src="asset/kunkun_alphapose.gif" width="100%" alt="" /></p>
-
 ## Prerequisite
 
 1. Environment
    - Linux system
-   - Python 3+ distribution
+   - Python > 3.6 distribution
 2. Dependencies
    - **Packages**
       - Pytorch > 0.4.0
@@ -55,9 +54,27 @@
 1. change the `video_path` in the `./videopose.py`
 2. Run it! You will find the rendered output video in the `./outputs` folder.
 
-##### Multiple person video
+##### Multiple person video (Not implemented yet)
 
-//TODO
+1. For developing, check `./videopose_multi_person`
+
+   ```python
+   video = 'kobe.mp4'
+   
+   handle_video(f'outputs/{video}') 
+   # Run AlphaPose, save the result into ./outputs/alpha_pose_kobe
+   
+   track(video)					 
+   # Taking the result from above as the input of PoseTrack, output poseflow-results.json # into the same directory of above. 
+   # The visualization result is save in ./outputs/alpha_pose_kobe/poseflow-vis
+   
+   # TODO: Need more action:
+   #  1. "Improve the accuracy of tracking algorithm" or "Doing specific post processing 
+   #     after getting the track result".
+   #  2. Choosing person(remove the other 2d points for each frame)
+   ```
+
+
 
 
 ##### Tips
@@ -107,6 +124,7 @@ The other feature will be added to improve accuracy in the future:
 - [x] Change 2D pose estimation method such as [AlphaPose](https://github.com/MVIG-SJTU/AlphaPose).
 - [x] Test HR-Net as 2d joints detector.
 - [x] Test LightTrack as pose tracker.
+- [ ] Multi-person video(complex) support.
 - [ ] Data augmentation to solve "high-speed with low-rate" problem: [SLOW-MO](https://github.com/avinashpaliwal/Super-SloMo).
 
 

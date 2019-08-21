@@ -5,11 +5,13 @@ import matplotlib.pyplot as plt
 import numpy as np
 import torch
 
+from common.utils import evaluate
+
 path = os.path.split(os.path.realpath(__file__))[0]
 main_path = os.path.join(path, '..')
 
 
-class common():
+class common:
     keypoints_symmetry = [[1, 3, 5, 7, 9, 11, 13, 15], [2, 4, 6, 8, 10, 12, 14, 16]]
     rot = np.array([0.14070565, -0.15007018, -0.7552408, 0.62232804], dtype=np.float32)
     skeleton_parents = np.array([-1, 0, 1, 2, 0, 4, 5, 0, 7, 8, 9, 8, 11, 12, 8, 14, 15])
@@ -124,26 +126,6 @@ def draw_3Dimg(pos, image, display=None, kpt2D=None):
         cv2.waitKey(3)
 
     return image
-
-
-def evaluate(test_generator, model_pos, action=None, return_predictions=False):
-    joints_left, joints_right = list([4, 5, 6, 11, 12, 13]), list([1, 2, 3, 14, 15, 16])
-    with torch.no_grad():
-        model_pos.eval()
-        N = 0
-        for _, batch, batch_2d in test_generator.next_epoch():
-            inputs_2d = torch.from_numpy(batch_2d.astype('float32'))
-            if torch.cuda.is_available():
-                inputs_2d = inputs_2d.cuda()
-            # Positional model
-            predicted_3d_pos = model_pos(inputs_2d)
-            if test_generator.augment_enabled():
-                # Undo flipping and take average with non-flipped version
-                predicted_3d_pos[1, :, :, 0] *= -1
-                predicted_3d_pos[1, :, joints_left + joints_right] = predicted_3d_pos[1, :, joints_right + joints_left]
-                predicted_3d_pos = torch.mean(predicted_3d_pos, dim=0, keepdim=True)
-            if return_predictions:
-                return predicted_3d_pos.squeeze(0).cpu().numpy()
 
 
 def videoInfo(VideoName):

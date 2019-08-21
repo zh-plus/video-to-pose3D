@@ -155,6 +155,34 @@ def split_video(video_path):
     return saved_path
 
 
+def evaluate(test_generator, model_pos, action=None, return_predictions=False):
+    """
+    Inference the 3d positions from 2d position.
+    :type test_generator: UnchunkedGenerator
+    :param test_generator:
+    :param model_pos: 3d pose model
+    :param return_predictions: return predictions if true
+    :return:
+    """
+    joints_left, joints_right = list([4, 5, 6, 11, 12, 13]), list([1, 2, 3, 14, 15, 16])
+    with torch.no_grad():
+        model_pos.eval()
+        N = 0
+        for _, batch, batch_2d in test_generator.next_epoch():
+            inputs_2d = torch.from_numpy(batch_2d.astype('float32'))
+            if torch.cuda.is_available():
+                inputs_2d = inputs_2d.cuda()
+            # Positional model
+            predicted_3d_pos = model_pos(inputs_2d)
+            if test_generator.augment_enabled():
+                # Undo flipping and take average with non-flipped version
+                predicted_3d_pos[1, :, :, 0] *= -1
+                predicted_3d_pos[1, :, joints_left + joints_right] = predicted_3d_pos[1, :, joints_right + joints_left]
+                predicted_3d_pos = torch.mean(predicted_3d_pos, dim=0, keepdim=True)
+            if return_predictions:
+                return predicted_3d_pos.squeeze(0).cpu().numpy()
+
+
 if __name__ == '__main__':
     os.chdir('..')
 
