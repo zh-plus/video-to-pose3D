@@ -1,4 +1,5 @@
 import os
+import sys
 import time
 
 from common.arguments import parse_args
@@ -14,9 +15,19 @@ from common.utils import Timer, split_video, evaluate
 os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"  # see issue #152
 os.environ["CUDA_VISIBLE_DEVICES"] = "1"
 
-path = os.path.split(os.path.realpath(__file__))[0]
-
 metadata = {'layout_name': 'coco', 'num_joints': 17, 'keypoints_symmetry': [[1, 3, 5, 7, 9, 11, 13, 15], [2, 4, 6, 8, 10, 12, 14, 16]]}
+
+
+def add_path():
+    Alphapose_path = os.path.abspath('joints_detectors/Alphapose')
+    hrnet_path = os.path.abspath('joints_detectors/hrnet')
+    trackers_path = os.path.abspath('pose_trackers')
+    paths = filter(lambda p: p not in sys.path, [Alphapose_path, hrnet_path, trackers_path])
+
+    sys.path.extend(paths)
+
+
+add_path()
 
 
 # record time
