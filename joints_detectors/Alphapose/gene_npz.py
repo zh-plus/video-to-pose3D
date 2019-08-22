@@ -16,6 +16,7 @@ from SPPE.src.main_fast_inference import *
 from tqdm import tqdm
 from fn import getTime
 from pPose_nms import write_json
+from common.utils import calculate_area
 
 args = opt
 args.dataset = 'coco'
@@ -171,11 +172,8 @@ def handle_video(video_file):
 
     kpts = []
     for i in range(len(final_result)):
-        try:
-            kpt = final_result[i]['result'][0]['keypoints']
-            kpts.append(kpt.data.numpy())
-        except:
-            print('error...')
+        kpt = max(final_result[i]['result'], key=lambda x: x['proposal_score'].data[0] * calculate_area(x['keypoints']))['keypoints']
+        kpts.append(kpt.data.numpy())
 
     name = f'{args.outputpath}/{video_name}.npz'
     kpts = np.array(kpts).astype(np.float32)
@@ -190,4 +188,4 @@ if __name__ == "__main__":
     print(os.getcwd())
 
     # handle_video(img_path='outputs/image/kobe')
-    handle_video('outputs/kobe.mp4')
+    handle_video('outputs/dance.mp4')

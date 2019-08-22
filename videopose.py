@@ -153,8 +153,9 @@ def inference_video(video_path, detector_2d):
     basename = os.path.basename(video_path)
     video_name = basename[:basename.rfind('.')]
     args.viz_video = video_path
-    args.viz_output = f'{dir_name}/{args.detector_2d}_{video_name}.gif'
+    args.viz_output = f'{dir_name}/{args.detector_2d}_{video_name}.mp4'
     # args.viz_limit = 20
+    args.input_npz = 'outputs/alpha_pose_dance/dance.npz'
 
     args.evaluate = 'pretrained_h36m_detectron_coco.bin'
 
@@ -170,4 +171,4 @@ if __name__ == '__main__':
     # for p in video_paths:
     #     inference_video(p)
 
-    inference_video('outputs/kobe.mp4', 'alpha_pose')
+    inference_video('outputs/dance.mp4', 'alpha_pose')

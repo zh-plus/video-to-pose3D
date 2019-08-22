@@ -91,10 +91,12 @@ class Timer:
 def calculate_area(data):
     """
     Get the rectangle area of keypoints.
-    :param data: AlphaPose keypoint format, [x, y, score, ... , x, y, score]
+    :param data: AlphaPose json keypoint format([x, y, score, ... , x, y, score]) or AlphaPose result keypoint format([[x, y], ..., [x, y]])
     :return: area
     """
-    data = np.reshape(data, (-1, 3))
+    if len(data) == 1:
+        data = np.reshape(data, (-1, 3))
+
     width = min(data[:, 0]) - max(data[:, 0])
     height = min(data[:, 1]) - max(data[:, 1])
 
