@@ -4,7 +4,7 @@
 
 <p align="center"><img src="asset/kunkun_alphapose.gif" width="100%" alt="" /></p>
 
-## prerequisite
+## Prerequisite
 
 1. Environment
    - Linux system
@@ -79,6 +79,7 @@
 
 
 ##### Tips
+0. The [PyCharm](https://www.jetbrains.com/pycharm/) is recommended since it is the IDE I'm using during development.
 1. If you're using PyCharm, mark `./joints_detectors/Alphapose`, `./joints_detectors/hrnet` and `./pose_trackers` as source root.
 2. If your're trying to run in command line, add these paths mentioned above to the sys.path at the head of `./videopose.py`
 
