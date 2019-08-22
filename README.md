@@ -3,7 +3,8 @@
 > Predict 3d human pose from video
 
 <p align="center"><img src="asset/kunkun_alphapose.gif" width="100%" alt="" /></p>
-## Prerequisite
+
+## prerequisite
 
 1. Environment
    - Linux system

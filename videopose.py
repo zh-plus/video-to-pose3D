@@ -155,7 +155,7 @@ def inference_video(video_path, detector_2d):
     args.viz_video = video_path
     args.viz_output = f'{dir_name}/{args.detector_2d}_{video_name}.mp4'
     # args.viz_limit = 20
-    args.input_npz = 'outputs/alpha_pose_dance/dance.npz'
+    # args.input_npz = 'outputs/alpha_pose_dance/dance.npz'
 
     args.evaluate = 'pretrained_h36m_detectron_coco.bin'
 
@@ -164,11 +164,4 @@ def inference_video(video_path, detector_2d):
 
 
 if __name__ == '__main__':
-    # video_folder = 'outputs/videos'
-    # root, dirs, files = next(os.walk(video_folder))
-    # video_paths = [os.path.join(video_folder, f) for f in files]
-    #
-    # for p in video_paths:
-    #     inference_video(p)
-
     inference_video('outputs/dance.mp4', 'alpha_pose')
