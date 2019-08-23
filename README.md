@@ -12,8 +12,8 @@
 2. Dependencies
    - **Packages**
       - Pytorch > 0.4.0
-      - torchsample
-      - ffmpeg
+      - [torchsample](https://github.com/MVIG-SJTU/AlphaPose/issues/71#issuecomment-398616495)
+      - [ffmpeg](https://ffmpeg.org/download.html)
       - tqdm
       - pillow
       - scipy
