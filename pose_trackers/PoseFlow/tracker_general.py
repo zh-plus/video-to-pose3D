@@ -207,6 +207,7 @@ def track(video_name):
     # 7. match threshold in Hungarian Matching
 
     # User specific parameters
+    video_name = os.path.basename(video_name)
     video_filename = video_name[:video_name.rfind('.')]
     args.imgdir = f'outputs/alpha_pose_{video_filename}/split_image'
     args.result_dir = f'outputs/alpha_pose_{video_filename}'

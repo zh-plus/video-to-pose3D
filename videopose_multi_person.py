@@ -1,9 +1,14 @@
 from joints_detectors.Alphapose.gene_npz import handle_video
 from pose_trackers.PoseFlow.tracker_general import track
+from common.utils import split_video
 
 if __name__ == '__main__':
-    video = 'kobe.mp4'
-    handle_video(f'outputs/{video}')
+    video = 'outputs/nba2k.mp4'
+
+    print(f'Splitting video: {video} into images...')
+    split_video(video)
+
+    handle_video(video)
     track(video)
 
     # TODO: Need more action:

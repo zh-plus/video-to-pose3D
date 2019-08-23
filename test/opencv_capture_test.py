@@ -2,7 +2,7 @@ import cv2
 
 from tqdm import tqdm
 
-path = 'dance.mp4'
+path = '../outputs/nba2k.mp4'
 stream = cv2.VideoCapture(path)
 assert stream.isOpened(), 'Cannot capture source'
 

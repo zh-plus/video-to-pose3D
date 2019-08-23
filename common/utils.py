@@ -131,7 +131,7 @@ def split_video(video_path):
     video_name = os.path.basename(video_path)
     video_name = video_name[:video_name.rfind('.')]
 
-    save_folder = pathlib.Path(f'{output_dir}/alpha_pose_{video_name}/split_image/')
+    save_folder = pathlib.Path(f'./{output_dir}/alpha_pose_{video_name}/split_image/')
     shutil.rmtree(str(save_folder), ignore_errors=True)
     save_folder.mkdir(parents=True, exist_ok=True)
 

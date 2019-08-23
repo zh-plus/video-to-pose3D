@@ -74,9 +74,6 @@ def main(args):
 
     assert detector_2d, 'detector_2d should be in ({alpha, hr, open}_pose)'
 
-    print(f'Splitting video: {args.viz_video} into images...')
-    split_video(args.viz_video)
-
     # 2D kpts loads or generate
     if not args.input_npz:
         video_name = args.viz_video
