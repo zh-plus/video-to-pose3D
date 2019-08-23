@@ -189,3 +189,12 @@ if __name__ == '__main__':
     os.chdir('..')
 
     split_video('outputs/kobe.mp4')
+
+
+def add_path():
+    Alphapose_path = os.path.abspath('joints_detectors/Alphapose')
+    hrnet_path = os.path.abspath('joints_detectors/hrnet')
+    trackers_path = os.path.abspath('pose_trackers')
+    paths = filter(lambda p: p not in sys.path, [Alphapose_path, hrnet_path, trackers_path])
+
+    sys.path.extend(paths)

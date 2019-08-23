@@ -1,6 +1,8 @@
+from common.utils import split_video, add_path
 from joints_detectors.Alphapose.gene_npz import handle_video
 from pose_trackers.PoseFlow.tracker_general import track
-from common.utils import split_video
+
+add_path()
 
 if __name__ == '__main__':
     video = 'outputs/nba2k.mp4'
