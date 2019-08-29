@@ -103,7 +103,9 @@ def calculate_area(data):
     :param data: AlphaPose json keypoint format([x, y, score, ... , x, y, score]) or AlphaPose result keypoint format([[x, y], ..., [x, y]])
     :return: area
     """
-    if len(data) == 1:
+    data = np.array(data)
+
+    if len(data.shape) == 1:
         data = np.reshape(data, (-1, 3))
 
     width = min(data[:, 0]) - max(data[:, 0])
