@@ -129,8 +129,3 @@ The other feature will be added to improve accuracy in the future:
 - [ ] Multi-person video(complex) support.
 - [ ] Data augmentation to solve "high-speed with low-rate" problem: [SLOW-MO](https://github.com/avinashpaliwal/Super-SloMo).
 
-
-
-## Related Efforts
-
-[BVH predictions](https://github.com/zh-plus/BVH_prediction) --- Predict rotation from xyz for BVH completion. (would be made public if permitted by Tencent)
