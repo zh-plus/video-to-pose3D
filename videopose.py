@@ -32,7 +32,7 @@ time0 = ckpt_time()
 
 def get_detector_2d(detector_name):
     def get_alpha_pose():
-        from joints_detectors.Alphapose.gene_npz import handle_video as alpha_pose
+        from joints_detectors.Alphapose.gene_npz import generate_kpts as alpha_pose
         return alpha_pose
 
     def get_hr_pose():
@@ -161,4 +161,4 @@ def inference_video(video_path, detector_2d):
 
 
 if __name__ == '__main__':
-    inference_video('outputs/dance.mp4', 'alpha_pose')
+    inference_video('outputs/kunkun_cut.mp4', 'alpha_pose')

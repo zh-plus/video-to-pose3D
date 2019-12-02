@@ -190,3 +190,7 @@ ENV/
 
 # mypy
 .mypy_cache/
+
+# Self-defined files
+/local_test/
+/lab_processing/

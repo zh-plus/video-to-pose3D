@@ -1,5 +1,5 @@
 from common.utils import split_video, add_path
-from joints_detectors.Alphapose.gene_npz import handle_video
+from joints_detectors.Alphapose.gene_npz import generate_kpts
 from pose_trackers.PoseFlow.tracker_general import track
 
 add_path()
@@ -10,7 +10,7 @@ if __name__ == '__main__':
     print(f'Splitting video: {video} into images...')
     split_video(video)
 
-    handle_video(video)
+    generate_kpts(video)
     track(video)
 
     # TODO: Need more action:
