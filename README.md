@@ -30,7 +30,7 @@
        - Download **yolov3-spp.weights** from ([Google Drive](https://drive.google.com/open?id=1D47msNOOiJKvPOXlnpyzdKA3k6E97NTC) | [Baidu pan](https://pan.baidu.com/s/1Zb2REEIk8tcahDa8KacPNA)),
          place to `./joints_detectors/Alphapose/models/yolo`
      - HR-Net (Bad 3d joints performance in my testing environment)
-       - Download **pose_hrnet*** from [Google Drive](https://drive.google.com/drive/folders/1nzM_OBV9LbAEA7HClC0chEyf_7ECDXYA), 
+       - Download **pose_hrnet*** from [Google Drive](https://drive.google.com/drive/folders/1nzM_OBV9LbAEA7HClC0chEyf_7ECDXYA) | [Baidu pan](https://pan.baidu.com/s/1v6dov-TyPVOtejTNF1HXrA)), 
          place to `./joints_detectors/hrnet/models/pytorch/pose_coco/`
        - Download **yolov3.weights** from [here](https://pjreddie.com/media/files/yolov3.weights),
          place to `./joints_detectors/hrnet/lib/detector/yolo`
