@@ -55,7 +55,7 @@ def generate_kpts(video_file):
         no_person.clear()
 
     for n in no_person:
-        kpts[n] = kpts[-1]
+        kpts[n] = kpts[-1] if kpts[-1] else kpts[n-1]
 
     # ============ Changing End ++++++++++
 
