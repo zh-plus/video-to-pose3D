@@ -6,7 +6,7 @@ import time
 import cv2
 import numpy as np
 import torch
-from torch._six import string_classes, int_classes
+from torch._six import string_classes
 
 RED = (0, 0, 255)
 GREEN = (0, 255, 0)
@@ -57,7 +57,7 @@ def collate_fn(batch):
         if elem.shape == ():  # scalars
             py_type = float if elem.dtype.name.startswith('float') else int
             return numpy_type_map[elem.dtype.name](list(map(py_type, batch)))
-    elif isinstance(batch[0], int_classes):
+    elif isinstance(batch[0], int):
         return torch.LongTensor(batch)
     elif isinstance(batch[0], float):
         return torch.DoubleTensor(batch)
