@@ -6,7 +6,7 @@ import time
 import cv2
 import numpy as np
 import torch
-from torch._six import string_classes, int_classes
+from torch._six import string_classes
 
 RED = (0, 0, 255)
 GREEN = (0, 255, 0)
@@ -57,7 +57,7 @@ def collate_fn(batch):
         if elem.shape == ():  # scalars
             py_type = float if elem.dtype.name.startswith('float') else int
             return numpy_type_map[elem.dtype.name](list(map(py_type, batch)))
-    elif isinstance(batch[0], int_classes):
+    elif isinstance(batch[0], int):
         return torch.LongTensor(batch)
     elif isinstance(batch[0], float):
         return torch.DoubleTensor(batch)
@@ -194,7 +194,7 @@ def vis_frame(frame, im_res, format='coco'):
             bg = img.copy()
             cv2.circle(bg, (int(cor_x / 2), int(cor_y / 2)), 2, p_color[n], -1)
             # Now create a mask of logo and create its inverse mask also
-            transparency = max(0, min(1, kp_scores[n]))
+            transparency = max(0, min(1, kp_scores[n].item()))
             img = cv2.addWeighted(bg, transparency, img, 1 - transparency, 0)
 
         # Draw proposal score on the head
@@ -219,7 +219,7 @@ def vis_frame(frame, im_res, format='coco'):
                 polygon = cv2.ellipse2Poly((int(mX), int(mY)), (int(length / 2), int(stickwidth)), int(angle), 0, 360, 1)
                 cv2.fillConvexPoly(bg, polygon, line_color[i])
                 # cv2.line(bg, start_xy, end_xy, line_color[i], (2 * (kp_scores[start_p] + kp_scores[end_p])) + 1)
-                transparency = max(0, min(1, 0.5 * (kp_scores[start_p] + kp_scores[end_p])))
+                transparency = max(0, min(1, 0.5 * (kp_scores[start_p] + kp_scores[end_p]).item()))
                 img = cv2.addWeighted(bg, transparency, img, 1 - transparency, 0)
     img = cv2.resize(img, (width, height), interpolation=cv2.INTER_CUBIC)
     return img
