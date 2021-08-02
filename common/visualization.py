@@ -170,7 +170,7 @@ def render_animation(keypoints, poses, skeleton, fps, bitrate, azim, output, vie
 
                 for n, ax in enumerate(ax_3d):
                     pos = poses[n][i]
-                    lines_3d[n][j - 1][0].set_xdata([pos[j, 0], pos[j_parent, 0]])
+                    lines_3d[n][j - 1][0].set_xdata(np.array([pos[j, 0], pos[j_parent, 0]])) # Hotfix matplotlib's bug. https://github.com/matplotlib/matplotlib/pull/20555
                     lines_3d[n][j - 1][0].set_ydata([pos[j, 1], pos[j_parent, 1]])
                     lines_3d[n][j - 1][0].set_3d_properties([pos[j, 2], pos[j_parent, 2]], zdir='z')
 
