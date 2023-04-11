@@ -129,3 +129,15 @@ The other feature will be added to improve accuracy in the future:
 - [ ] Multi-person video(complex) support.
 - [ ] Data augmentation to solve "high-speed with low-rate" problem: [SLOW-MO](https://github.com/avinashpaliwal/Super-SloMo).
 
+
+## Citation
+```
+@misc{videotopose2021,
+  author = {Zheng, Hao},
+  title = {video-to-pose3D},
+  year = {2021},
+  publisher = {GitHub},
+  journal = {GitHub repository},
+  howpublished = {\url{https://github.com/zh-plus/video-to-pose3D}},
+}
+```
