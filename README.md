@@ -35,6 +35,8 @@
        - Download **yolov3.weights** from [here](https://pjreddie.com/media/files/yolov3.weights),
          place to `./joints_detectors/hrnet/lib/detector/yolo`
      - OpenPose (Not tested, PR to README.md is highly appreciated )
+     - Mediapipe
+       - Install mediapipe from pypi: `pip install mediapipe`
    - **3D Joint detectors**
       - Download **pretrained_h36m_detectron_coco.bin** from [here](https://dl.fbaipublicfiles.com/video-pose-3d/pretrained_h36m_detectron_coco.bin),
         place it into `./checkpoint` folder

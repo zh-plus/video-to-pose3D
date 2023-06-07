@@ -38,10 +38,15 @@ def get_detector_2d(detector_name):
     def get_hr_pose():
         from joints_detectors.hrnet.pose_estimation.video import generate_kpts as hr_pose
         return hr_pose
+    
+    def get_mediapipe_pose():
+        from joints_detectors.mediapipe.pose import generate_kpts as mediapipe_pose
+        return mediapipe_pose
 
     detector_map = {
         'alpha_pose': get_alpha_pose,
         'hr_pose': get_hr_pose,
+        'mediapipe_pose': get_mediapipe_pose,
         # 'open_pose': open_pose
     }
 
@@ -61,7 +66,7 @@ class Skeleton:
 def main(args):
     detector_2d = get_detector_2d(args.detector_2d)
 
-    assert detector_2d, 'detector_2d should be in ({alpha, hr, open}_pose)'
+    assert detector_2d, 'detector_2d should be in ({alpha, hr, open, mediapipe}_pose)'
 
     # 2D kpts loads or generate
     if not args.input_npz:
@@ -139,7 +144,7 @@ def main(args):
 def inference_video(video_path, detector_2d):
     """
     Do image -> 2d points -> 3d points to video.
-    :param detector_2d: used 2d joints detector. Can be {alpha_pose, hr_pose}
+    :param detector_2d: used 2d joints detector. Can be {alpha_pose, hr_pose, mediapipe_pose}
     :param video_path: relative to outputs
     :return: None
     """
